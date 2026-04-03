@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hefty-tm"
+version = "0.1.0"
+description = "Starter code basis for lattice-QCD-informed T-matrix extraction"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "scipy>=1.12",
+]
+
+[project.scripts]
+hefty-tm = "hefty_tm.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

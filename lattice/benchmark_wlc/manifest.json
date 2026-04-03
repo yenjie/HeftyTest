@@ -1,0 +1,125 @@
+{
+  "source_paper": {
+    "title": "Un-screened forces in Quark-Gluon Plasma?",
+    "arxiv_id": "2308.16587v2",
+    "url": "https://arxiv.org/abs/2308.16587"
+  },
+  "benchmark_purpose": "Tang et al. Wilson-line first benchmark for m1(r,tau,T) and V_tilde(r,T)",
+  "ensemble": {
+    "beta": 8.249,
+    "a_fm_by_temperature": {
+      "0.195": 0.028109256467236464,
+      "0.251": 0.028077259590210582,
+      "0.293": 0.028061288452787256,
+      "0.352": 0.028029400625000003
+    }
+  },
+  "distance_map": [
+    {
+      "r_index": 8,
+      "label": "r0p224",
+      "target_r_fm": 0.224
+    },
+    {
+      "r_index": 18,
+      "label": "r0p505",
+      "target_r_fm": 0.505
+    },
+    {
+      "r_index": 27,
+      "label": "r0p757",
+      "target_r_fm": 0.757
+    }
+  ],
+  "temperatures": [
+    {
+      "temperature_GeV": 0.195,
+      "Nt": 36,
+      "primary_data": [
+        {
+          "r_index": 8,
+          "benchmark_file": "data_subtracted/Meff_sub_T195_r0p224.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt36_r8.txt"
+        },
+        {
+          "r_index": 18,
+          "benchmark_file": "data_subtracted/Meff_sub_T195_r0p505.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt36_r18.txt"
+        },
+        {
+          "r_index": 27,
+          "benchmark_file": "data_subtracted/Meff_sub_T195_r0p757.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt36_r27.txt"
+        }
+      ]
+    },
+    {
+      "temperature_GeV": 0.251,
+      "Nt": 28,
+      "primary_data": [
+        {
+          "r_index": 8,
+          "benchmark_file": "data_subtracted/Meff_sub_T251_r0p224.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt28_r8.txt"
+        },
+        {
+          "r_index": 18,
+          "benchmark_file": "data_subtracted/Meff_sub_T251_r0p505.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt28_r18.txt"
+        },
+        {
+          "r_index": 27,
+          "benchmark_file": "data_subtracted/Meff_sub_T251_r0p757.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt28_r27.txt"
+        }
+      ]
+    },
+    {
+      "temperature_GeV": 0.293,
+      "Nt": 24,
+      "primary_data": [
+        {
+          "r_index": 8,
+          "benchmark_file": "data_subtracted/Meff_sub_T293_r0p224.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt24_r8.txt"
+        },
+        {
+          "r_index": 18,
+          "benchmark_file": "data_subtracted/Meff_sub_T293_r0p505.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt24_r18.txt"
+        },
+        {
+          "r_index": 27,
+          "benchmark_file": "data_subtracted/Meff_sub_T293_r0p757.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt24_r27.txt"
+        }
+      ]
+    },
+    {
+      "temperature_GeV": 0.352,
+      "Nt": 20,
+      "primary_data": [
+        {
+          "r_index": 8,
+          "benchmark_file": "data_subtracted/Meff_sub_T352_r0p224.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt20_r8.txt"
+        },
+        {
+          "r_index": 18,
+          "benchmark_file": "data_subtracted/Meff_sub_T352_r0p505.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt20_r18.txt"
+        },
+        {
+          "r_index": 27,
+          "benchmark_file": "data_subtracted/Meff_sub_T352_r0p757.txt",
+          "source_file": "../bazavov_2308.16587v2/data/data_plots_final/Meff_b8.249_sub_Nt20_r27.txt"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "The primary benchmark inputs are the subtracted Meff files.",
+    "Matching raw Meff and Bazavov fit-curve files were copied into sibling directories for cross-checks.",
+    "Bazavov's plots_data exports do not contain a direct figure2_T293.txt file, so the 0.293 GeV benchmark point is sourced from data_plots_final."
+  ]
+}

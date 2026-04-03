@@ -1,0 +1,1001 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "rates.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.000.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.100.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.145.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.180.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.226.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.300.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.475.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.583.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12a_bb_SCS_T194_EB_0.976.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig12b_bb_SCS_T194_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13a_cc_Jpsi_T194_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13a_cc_Jpsi_T194_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13a_cc_Jpsi_T194_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13b_cc_Psi2S_T194_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13b_cc_Psi2S_T194_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13b_cc_Psi2S_T194_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13c_cc_Jpsi_T400_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13c_cc_Jpsi_T400_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13c_cc_Jpsi_T400_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13d_cc_Psi2S_T400_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13d_cc_Psi2S_T400_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig13d_cc_Psi2S_T400_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14a_Y1S_T194_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14a_Y1S_T194_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14a_Y1S_T194_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14b_Y2S_T194_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14b_Y2S_T194_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14b_Y2S_T194_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14c_Y1S_T400_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14c_Y1S_T400_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14c_Y1S_T400_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14d_Y2S_T400_SCS_offshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14d_Y2S_T400_SCS_onshell.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig14d_Y2S_T400_U_potential.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_SCS_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_bb_WLC_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_cc_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_cc_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig15_cc_WLC_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16a_Y1S_T195_WLC_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16a_Y1S_T195_WLC_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16b_Y1S_T352_WLC_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16b_Y1S_T352_WLC_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16c_Y2S_T195_WLC_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16c_Y2S_T195_WLC_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16d_Y2S_T352_WLC_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16d_Y2S_T352_WLC_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16e_Y1S_T194_SCS_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16e_Y1S_T194_SCS_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16f_Y1S_T400_SCS_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16f_Y1S_T400_SCS_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16g_Y2S_T194_SCS_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16g_Y2S_T194_SCS_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16h_Y2S_T400_SCS_noInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig16h_Y2S_T400_SCS_withInterf.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig17.tsv"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_1P_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_1P_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_1S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_1S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_2S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_2S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_3S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_U_3S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_1P_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_1P_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_1S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_1S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2P_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2P_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2Q_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2Q_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_2S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_3P_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_3P_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_3S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_3S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_4S_P0.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig18_WLC_4S_P10.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19a_Y1S_T195_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19a_Y1S_T195_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19a_Y1S_T195_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19a_Y1S_T195_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19b_Y1S_T352_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19b_Y1S_T352_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19b_Y1S_T352_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19b_Y1S_T352_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19c_Y2S_T195_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19c_Y2S_T195_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19c_Y2S_T195_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19c_Y2S_T195_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19d_Y2S_T352_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19d_Y2S_T352_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19d_Y2S_T352_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig19d_Y2S_T352_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20a_JPsi_T195_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20a_JPsi_T195_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20a_JPsi_T195_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20a_JPsi_T195_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20b_JPsi_T352_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20b_JPsi_T352_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20b_JPsi_T352_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20b_JPsi_T352_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20c_PSI2S_T195_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20c_PSI2S_T195_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20c_PSI2S_T195_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20c_PSI2S_T195_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20d_PSI2S_T352_2TEAr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20d_PSI2S_T352_Full.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20d_PSI2S_T352_kappa_r2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig20d_PSI2S_T352_kr2.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_imag_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_imag_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_imag_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_imag_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_real_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_real_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_real_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cg_real_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_imag_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_imag_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_imag_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_imag_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_real_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_real_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_real_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_SCS_cq_real_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_imag_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_imag_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_imag_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_imag_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_real_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_real_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_real_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cg_real_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_imag_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_imag_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_imag_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_imag_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_real_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_real_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_real_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig4_WLC_cq_real_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_b_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_b_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_b_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_b_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_c_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_c_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_c_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_c_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_g_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_g_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_g_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_g_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_lq_T194.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_lq_T258.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_lq_T320.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_SCS_lq_T400.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_b_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_b_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_b_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_b_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_c_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_c_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_c_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_c_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_g_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_g_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_g_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_g_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_lq_T195.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_lq_T251.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_lq_T293.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig5_WLC_lq_T352.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_SCS_b.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_SCS_c.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_SCS_g.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_SCS_lq.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_Upot_b.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_Upot_c.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_Upot_g.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_Upot_lq.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_WLC_b.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_WLC_c.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_WLC_g.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig6_WLC_lq.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_2Gb.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_SCS_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_2Gb.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_bb_WLC_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_cc_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_cc_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_cc_WLC_2Gc.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig7_cc_WLC_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_SCS_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_Upot_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_Upot_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_Upot_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_Upot_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_2P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_3P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_3S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_bb_WLC_4S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_SCS_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_SCS_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_SCS_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_Upot_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_Upot_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_Upot_2S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_WLC_1P.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_WLC_1S.txt"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Fig8_cc_WLC_2S.txt"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

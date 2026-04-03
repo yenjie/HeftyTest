@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local notes with credentials or machine-specific prompts
+prompt.md
+
+# Generated benchmark outputs
+results/
+
+# Nested Overleaf git repository and LaTeX build byproducts
+overleaf_69cda82ae8be36b19f2caff6/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+
+# Large fetched raw lattice bundles kept outside the tracked code path
+lattice/bazavov_2308.16587v2/
+lattice/bazavov_2308.16587v2_data.tar.xz
+
+# Local paper stash
+papers/

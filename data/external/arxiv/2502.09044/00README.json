@@ -1,0 +1,85 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "maintext.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure1.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure2_195MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure2_293MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure2_352MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure3_251MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure3_293MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure3_352MeV_dash.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure3_352MeV_solid.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_boxes.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_lines_1S.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_lines_2S.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_lines_3S.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_lines_4S.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure4_stars.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure5_195MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure5_293MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "anc/Figure5_500MeV.dat"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "bibliography.bib"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

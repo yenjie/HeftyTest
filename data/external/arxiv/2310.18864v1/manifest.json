@@ -1,0 +1,28 @@
+{
+  "arxiv_id": "2310.18864v1",
+  "files": [
+    "2310.18864v1/anc/Fig1.dat",
+    "2310.18864v1/anc/Fig10.dat",
+    "2310.18864v1/anc/Fig2_195.dat",
+    "2310.18864v1/anc/Fig2_251.dat",
+    "2310.18864v1/anc/Fig2_293.dat",
+    "2310.18864v1/anc/Fig2_352.dat",
+    "2310.18864v1/anc/Fig3.dat",
+    "2310.18864v1/anc/Fig4.dat",
+    "2310.18864v1/anc/Fig5.dat",
+    "2310.18864v1/anc/Fig6.dat",
+    "2310.18864v1/anc/Fig7_c.dat",
+    "2310.18864v1/anc/Fig7_g.dat",
+    "2310.18864v1/anc/Fig7_q.dat",
+    "2310.18864v1/anc/Fig8.dat",
+    "2310.18864v1/anc/Fig9.dat",
+    "2310.18864v1/anc/README.txt"
+  ],
+  "has_ancillary_tables": true,
+  "include_full_source": false,
+  "key": "wlc-2024",
+  "posted": "2023-10-29",
+  "role": "Core extraction paper for Wilson line correlators, interference function, spectral functions, and diffusion benchmarks.",
+  "source_url": "https://arxiv.org/e-print/2310.18864v1",
+  "title": "T-matrix analysis of static Wilson line correlators from lattice QCD at finite temperature"
+}

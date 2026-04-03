@@ -1,0 +1,30 @@
+{
+  "arxiv_id": "2502.09044",
+  "files": [
+    "2502.09044/00README.json",
+    "2502.09044/anc/Figure1.dat",
+    "2502.09044/anc/Figure2_195MeV.dat",
+    "2502.09044/anc/Figure2_293MeV.dat",
+    "2502.09044/anc/Figure2_352MeV.dat",
+    "2502.09044/anc/Figure3_251MeV.dat",
+    "2502.09044/anc/Figure3_293MeV.dat",
+    "2502.09044/anc/Figure3_352MeV_dash.dat",
+    "2502.09044/anc/Figure3_352MeV_solid.dat",
+    "2502.09044/anc/Figure4_boxes.dat",
+    "2502.09044/anc/Figure4_lines_1S.dat",
+    "2502.09044/anc/Figure4_lines_2S.dat",
+    "2502.09044/anc/Figure4_lines_3S.dat",
+    "2502.09044/anc/Figure4_lines_4S.dat",
+    "2502.09044/anc/Figure4_stars.dat",
+    "2502.09044/anc/Figure5_195MeV.dat",
+    "2502.09044/anc/Figure5_293MeV.dat",
+    "2502.09044/anc/Figure5_500MeV.dat"
+  ],
+  "has_ancillary_tables": true,
+  "include_full_source": false,
+  "key": "spectroscopy-2025",
+  "posted": "2025-02-13",
+  "role": "Complex-energy pole analysis and melting criterion.",
+  "source_url": "https://arxiv.org/e-print/2502.09044",
+  "title": "Quarkonium Spectroscopy in the Quark-Gluon Plasma"
+}
