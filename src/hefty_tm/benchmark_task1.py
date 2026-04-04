@@ -49,6 +49,7 @@ BAZAVOV_SIZE = 32
 BAZAVOV_JACKKNIFE_BINS = 16
 BAZAVOV_NTAU_BY_TEMPERATURE = {0.195: 36, 0.251: 28, 0.293: 24, 0.352: 20}
 PUBLIC_WILSON_VALIDATION_RADIUS_INDEX = 15
+TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW = 31
 SPECTRAL_SHAPE_WEIGHT = 1.5
 SPECTRAL_SHAPE_FLOOR = 1.0e-4
 SPECTRAL_SUMMARY_WEIGHT = 2.0
@@ -6987,7 +6988,7 @@ def write_tang_exact_report(
         "",
         f"- Screened-Cornell constants: `alpha_s = {ALPHA_S}` and `sigma = {SIGMA} GeV^2`.",
         "- `phi(r,T)` is fixed to the Tang Fig. 3 interpolators at each temperature; it is not refit dynamically in this branch.",
-        "- The self-energy kernel is fixed to the Tang Fig. 6-inferred reference kernel at each temperature; it is not dynamically deformed in this branch.",
+        f"- The self-energy kernel is fixed to a regularized Tang Fig. 6-inferred reference kernel at each temperature, using a Savitzky-Golay smoothing window of `{TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW}` to suppress inversion-induced hot-channel shoulders; it is not dynamically deformed in this branch.",
         "- No direct Tang Fig. 5 residuals are included in the fit objective.",
         "- No direct Tang Fig. 6 residuals are included in the fit objective.",
         "- No public `c1(r,T)` profile term is included in the fit objective.",
@@ -7088,7 +7089,10 @@ def run_task1_tang_exact_benchmark(
     curves = load_lattice_curves(root)
     intercepts = estimate_intercepts(curves)
     initial_fits = fit_temperature_separately(intercepts)
-    kernels = infer_reference_self_energy_kernels(root)
+    kernels = infer_reference_self_energy_kernels(
+        root,
+        smoothing_window=TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW,
+    )
     phi_interpolators = build_phi_interpolators(root)
     phi_values = _phi_values(root)
     publication_parameter_targets = load_tang_fig4_targets(root)
@@ -7195,7 +7199,7 @@ def run_task1_tang_exact_benchmark(
             "finite_temperature_lattice_input": "public_subtracted_m1_tables_only",
             "finite_temperature_raw_wilson_publicly_available": False,
             "fixed_phi_source": "Tang 2310.18864 Fig3 interpolators",
-            "reference_self_energy_source": "Tang 2310.18864 Fig6 inferred kernel held fixed",
+            "reference_self_energy_source": f"Tang 2310.18864 Fig6 inferred kernel held fixed after regularized smoothing (window={TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW})",
             "fixed_ms_gev": 0.2,
             "fit_parameters": ["md(T)", "cb(T)"],
             "self_consistent_closure": "reduced Tang-style replay with fixed phi(r,T), fixed reference kernel, and no direct Fig5/Fig6, public c1, or WLC->SCS penalty terms",
