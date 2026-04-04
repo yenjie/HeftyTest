@@ -3786,8 +3786,8 @@ def refine_publication_faithful_metric_saved_branch_hot_slice_cleanup(
     candidate_fits[0.352] = PotentialFit(
         **{
             **fit_0352.__dict__,
-            "kernel_im1_radius": fit_0352.kernel_im1_radius + 0.01,
-            "im_sigma_slope": fit_0352.im_sigma_slope - 0.006,
+            "kernel_im1_radius": fit_0352.kernel_im1_radius + 0.015,
+            "im_sigma_slope": fit_0352.im_sigma_slope - 0.010,
             "chi2": 0.0,
             "n_points": 0,
             "residuals": (),
