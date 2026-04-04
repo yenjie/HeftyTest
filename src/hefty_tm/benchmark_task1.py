@@ -3777,15 +3777,17 @@ def refine_publication_faithful_metric_saved_branch_hot_slice_cleanup(
     baseline_hot_chi2 = baseline_summary[0.352].chi2
 
     # Final deterministic hot-slice cleanup from a constrained local search.
-    # It targets the dominant T = 0.352 GeV contribution while keeping the
+    # Following the WU high-temperature strategy, keep the screened-Cornell
+    # backbone fixed and release the hot imaginary-sector width piece instead.
+    # This targets the dominant T = 0.352 GeV contribution while keeping the
     # Tang-facing publication metrics no worse than the saved branch.
     candidate_fits = dict(initial_fits)
     fit_0352 = candidate_fits[0.352]
     candidate_fits[0.352] = PotentialFit(
         **{
             **fit_0352.__dict__,
-            "kernel_im1_radius": fit_0352.kernel_im1_radius + 0.005,
-            "im_sigma_slope": fit_0352.im_sigma_slope - 0.004,
+            "kernel_im1_radius": fit_0352.kernel_im1_radius + 0.01,
+            "im_sigma_slope": fit_0352.im_sigma_slope - 0.006,
             "chi2": 0.0,
             "n_points": 0,
             "residuals": (),
