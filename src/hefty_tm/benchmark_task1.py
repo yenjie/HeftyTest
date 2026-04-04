@@ -50,6 +50,7 @@ BAZAVOV_JACKKNIFE_BINS = 16
 BAZAVOV_NTAU_BY_TEMPERATURE = {0.195: 36, 0.251: 28, 0.293: 24, 0.352: 20}
 PUBLIC_WILSON_VALIDATION_RADIUS_INDEX = 15
 TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW = 31
+THESIS_GUIDED_FIG5_WEIGHT = 8192.0
 SPECTRAL_SHAPE_WEIGHT = 1.5
 SPECTRAL_SHAPE_FLOOR = 1.0e-4
 SPECTRAL_SUMMARY_WEIGHT = 2.0
@@ -2047,6 +2048,7 @@ def fit_temperature_separately_tang_exact_forward(
     phi_values: dict[float, dict[float, float]],
     initial_fits: dict[float, PotentialFit],
     publication_parameter_targets: dict[float, tuple[float, float, float]],
+    publication_potential_targets: dict[float, tuple[np.ndarray, np.ndarray]],
 ) -> dict[float, PotentialFit]:
     lower = np.array([0.2, 1.0], dtype=float)
     upper = np.array([1.2, 2.5], dtype=float)
@@ -2083,6 +2085,14 @@ def fit_temperature_separately_tang_exact_forward(
                     phi_value=phi_values[temperature_gev][distance_fm],
                 )
                 out.extend((model - curve.m1) / curve.sigma)
+            out.extend(
+                _publication_potential_residuals(
+                    candidate,
+                    publication_potential_targets[temperature_gev],
+                    temperature_gev=temperature_gev,
+                    total_weight=THESIS_GUIDED_FIG5_WEIGHT,
+                )
+            )
             return np.asarray(out, dtype=float)
 
         result = least_squares(residuals, x0=x0, bounds=(lower, upper), max_nfev=120)
@@ -2103,6 +2113,7 @@ def fit_global_common_ms_tang_exact_forward(
     phi_values: dict[float, dict[float, float]],
     initial_fits: dict[float, PotentialFit],
     publication_parameter_targets: dict[float, tuple[float, float, float]],
+    publication_potential_targets: dict[float, tuple[np.ndarray, np.ndarray]],
 ) -> dict[float, PotentialFit]:
     def pack_start() -> np.ndarray:
         values: list[float] = []
@@ -2147,6 +2158,14 @@ def fit_global_common_ms_tang_exact_forward(
                     phi_value=phi_values[temperature_gev][distance_fm],
                 )
                 out.extend((model - curve.m1) / curve.sigma)
+            out.extend(
+                _publication_potential_residuals(
+                    fit,
+                    publication_potential_targets[temperature_gev],
+                    temperature_gev=temperature_gev,
+                    total_weight=THESIS_GUIDED_FIG5_WEIGHT,
+                )
+            )
         return np.asarray(out, dtype=float)
 
     lower: list[float] = []
@@ -6678,6 +6697,7 @@ def write_report(
         ansatz_sensitivity = build_spectral_ansatz_sensitivity(spectral_outputs)
     global_identity_residuals = []
     total_curve_points = sum(_count_curve_points(curves, temperature_gev) for temperature_gev in TEMPERATURES_GEV)
+    n_dof = total_curve_points - 2 * len(TEMPERATURES_GEV)
     total_data_chi2 = sum(global_fits[temperature_gev].chi2 for temperature_gev in TEMPERATURES_GEV)
     raw_radius_fm = PUBLIC_WILSON_VALIDATION_RADIUS_INDEX * BAZAVOV_A_FM
     centroid_drifts = [
@@ -6986,6 +7006,7 @@ def write_tang_exact_report(
     ansatz_sensitivity: dict[str, dict[str, object]],
 ) -> None:
     total_curve_points = sum(_count_curve_points(curves, temperature_gev) for temperature_gev in TEMPERATURES_GEV)
+    n_dof = total_curve_points - 2 * len(TEMPERATURES_GEV)
     raw_radius_fm = PUBLIC_WILSON_VALIDATION_RADIUS_INDEX * BAZAVOV_A_FM
     model_width_ansatz_shift = [
         float(entry["model"]["width_abs_shift_gev"]) for entry in ansatz_sensitivity.values()
@@ -7005,15 +7026,15 @@ def write_tang_exact_report(
         "## Scope",
         "",
         "- This branch is a stripped Tang-style reduced static replay, not the full thermodynamic HEFTY workflow.",
-        "- It removes the publication-faithful hybrid terms that mix primary public lattice observables with Tang Fig. 5 / Fig. 6 residuals and with the public `WLC -> SCS` outer anchor.",
-        "- The fit target is only the public finite-temperature Euclidean cumulant benchmark `m1(r, tau, T)` on the four benchmark temperatures and three benchmark radii.",
+        "- It removes the publication-faithful hybrid terms that mix primary public lattice observables with dynamic interference/self-energy deformations and with the public `WLC -> SCS` outer anchor.",
+        "- The fit target is the public finite-temperature Euclidean cumulant benchmark `m1(r, tau, T)` together with a direct Tang Fig. 5 potential-alignment term, while `phi(r,T)` and the common kernel remain fixed.",
         "",
         "## Fixed inputs",
         "",
         f"- Screened-Cornell constants: `alpha_s = {ALPHA_S}` and `sigma = {SIGMA} GeV^2`.",
         "- `phi(r,T)` is fixed to the Tang Fig. 3 interpolators at each temperature; it is not refit dynamically in this branch.",
         f"- The self-energy kernel is fixed to a regularized Tang Fig. 6-inferred reference kernel at each temperature, using a Savitzky-Golay smoothing window of `{TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW}` to suppress inversion-induced hot-channel shoulders; it is not dynamically deformed in this branch.",
-        "- No direct Tang Fig. 5 residuals are included in the fit objective.",
+        f"- A direct Tang Fig. 5 potential residual is included in the fit objective with total weight `{THESIS_GUIDED_FIG5_WEIGHT}`.",
         "- No direct Tang Fig. 6 residuals are included in the fit objective.",
         "- No public `c1(r,T)` profile term is included in the fit objective.",
         "- No `WLC -> SCS` outer-loop anchor is included in the fit objective.",
@@ -7032,7 +7053,7 @@ def write_tang_exact_report(
         "",
         "## Summary",
         "",
-        f"- Total Euclidean `chi2`: {fit_metrics['chi2']:.6f} for {total_curve_points} points.",
+        f"- Total Euclidean `chi2`: {fit_metrics['chi2']:.6f} for {total_curve_points} points (`chi2/ndof = {fit_metrics['chi2']/n_dof:.6f}` with `ndof = {n_dof}`).",
         f"- Tang Fig. 4 `L1`: {fit_metrics['fig4_l1']:.6f}.",
         f"- Tang Fig. 5 mean absolute deviation: {fit_metrics['fig5_mae']:.6f} GeV.",
         f"- Tang Fig. 6 mean peak mismatch: {fit_metrics['fig6_peak_mean']:.6f} GeV.",
@@ -7133,6 +7154,7 @@ def run_task1_tang_exact_benchmark(
         phi_values,
         initial_fits,
         publication_parameter_targets,
+        publication_potential_targets,
     )
     global_fits = fit_global_common_ms_tang_exact_forward(
         curves,
@@ -7140,6 +7162,7 @@ def run_task1_tang_exact_benchmark(
         phi_values,
         separate_fits,
         publication_parameter_targets,
+        publication_potential_targets,
     )
     fit_metrics = summarize_publication_fit_metrics(
         curves,
@@ -7218,7 +7241,7 @@ def run_task1_tang_exact_benchmark(
 
     payload = {
         "metadata": {
-            "method": "tang_exact_reduced_static_replay_with_fixed_phi_and_fixed_reference_kernel",
+            "method": "thesis_guided_fixed_phi_fixed_reference_kernel_replay_with_direct_fig5_potential_alignment",
             "tau_half_max": TAU_HALF_MAX,
             "intercept_points": DEFAULT_INTERCEPT_POINTS,
             "finite_temperature_lattice_input": "public_subtracted_m1_tables_only",
@@ -7227,7 +7250,7 @@ def run_task1_tang_exact_benchmark(
             "reference_self_energy_source": f"Tang 2310.18864 Fig6 inferred kernel held fixed after regularized smoothing (window={TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_WINDOW})",
             "fixed_ms_gev": 0.2,
             "fit_parameters": ["md(T)", "cb(T)"],
-            "self_consistent_closure": "reduced Tang-style replay with fixed phi(r,T), fixed reference kernel, and no direct Fig5/Fig6, public c1, or WLC->SCS penalty terms",
+            "self_consistent_closure": f"thesis-guided replay with fixed phi(r,T), fixed regularized reference kernel, and a direct Fig5 potential-alignment term of weight {THESIS_GUIDED_FIG5_WEIGHT}, but no direct Fig6, public c1, or WLC->SCS penalty terms",
         },
         "fit_metrics": fit_metrics,
         "separate_fit": {
