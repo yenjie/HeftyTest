@@ -6079,6 +6079,30 @@ def plot_phi_extracted(
     plt.close(fig)
 
 
+def plot_phi_thesis_treatment(
+    root: Path,
+    output_path: Path,
+) -> None:
+    plot_phi_extracted(
+        root,
+        {
+            temperature_gev: PotentialFit(
+                md=0.5,
+                ms=0.2,
+                cb=1.1,
+                chi2=0.0,
+                n_points=0,
+                residuals=(),
+                residual_sigma=(),
+            )
+            for temperature_gev in TEMPERATURES_GEV
+        },
+        output_path,
+        fixed_phi_interpolators=build_phi_interpolators(root),
+        title="Thesis-guided fixed interference treatment",
+    )
+
+
 def plot_spectral_ansatz_sensitivity(
     ansatz_outputs: dict[str, dict[str, object]],
     output_path: Path,
@@ -7143,6 +7167,7 @@ def run_task1_tang_exact_benchmark(
     raw_wilson_plot = output_dir / "plot_public_wilson_validation.png"
     public_c1_plot = output_dir / "plot_public_c1_validation.png"
     phi_plot = output_dir / "plot_phi_extracted.png"
+    phi_thesis_plot = output_dir / "plot_phi_thesis_treatment.png"
     fig4_plot = output_dir / "plot_fig4_parameter_comparison.png"
     spectral_plot = output_dir / "plot_spectral_extraction.png"
     spectral_ansatz_plot = output_dir / "plot_spectral_ansatz_sensitivity.png"
@@ -7440,6 +7465,7 @@ def run_task1_benchmark(
     plot_public_zero_temperature_wilson_validation(raw_wilson_validation, raw_wilson_plot)
     plot_public_finite_temperature_potential_validation(public_re_profiles, global_fits, public_c1_plot)
     plot_phi_extracted(root, global_fits, phi_plot)
+    plot_phi_thesis_treatment(root, phi_thesis_plot)
     plot_fig4_parameter_comparison(root, global_fits, fig4_plot)
     plot_spectral_extraction(spectral_outputs, spectral_plot)
     ansatz_sensitivity = build_spectral_ansatz_sensitivity(spectral_outputs)
