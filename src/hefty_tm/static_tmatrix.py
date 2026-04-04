@@ -130,7 +130,8 @@ def _infer_self_energy_at_energy(
 def infer_reference_self_energy_kernels(
     root: Path,
     *,
-    smoothing_window: int = 7,
+    smoothing_window: int | dict[float, int] = 7,
+    imag_smoothing_window: int | dict[float, int] | None = None,
     dense_energy_points: int = 1201,
 ) -> dict[float, SelfEnergyKernel]:
     phi_interpolators = build_phi_interpolators(root)
@@ -157,6 +158,16 @@ def infer_reference_self_energy_kernels(
     kernels: dict[float, SelfEnergyKernel] = {}
 
     for temperature_gev in TEMPERATURE_BENCHMARK_GEV:
+        if isinstance(smoothing_window, dict):
+            window = int(smoothing_window[round(float(temperature_gev), 3)])
+        else:
+            window = int(smoothing_window)
+        if imag_smoothing_window is None:
+            imag_window = window
+        elif isinstance(imag_smoothing_window, dict):
+            imag_window = int(imag_smoothing_window[round(float(temperature_gev), 3)])
+        else:
+            imag_window = int(imag_smoothing_window)
         potential_values = np.array(
             [float(potential_interpolators[temperature_gev](r)) for r in DISTANCE_BENCHMARK_FM],
             dtype=float,
@@ -181,9 +192,9 @@ def infer_reference_self_energy_kernels(
             real_sigma.append(real_part)
             imag_sigma.append(imag_part)
 
-        real_sigma = savgol_filter(np.asarray(real_sigma, dtype=float), smoothing_window, 3, mode="interp")
+        real_sigma = savgol_filter(np.asarray(real_sigma, dtype=float), window, 3, mode="interp")
         imag_sigma = -np.exp(
-            savgol_filter(np.log(-np.asarray(imag_sigma, dtype=float)), smoothing_window, 3, mode="interp")
+            savgol_filter(np.log(-np.asarray(imag_sigma, dtype=float)), imag_window, 3, mode="interp")
         )
 
         dense_energy_grid = np.linspace(float(energy_grid.min()), float(energy_grid.max()), dense_energy_points)
