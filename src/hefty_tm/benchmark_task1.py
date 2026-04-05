@@ -62,11 +62,34 @@ TANG_EXACT_REFERENCE_KERNEL_IMAG_SMOOTHING_BY_TEMPERATURE = {
     0.352: 67,
 }
 TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS = 321
-TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV = 0.005
-TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT = 0.21
+TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV = 0.008
+TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT = 0.55
 TANG_WLC_FIG2_HOT_IM_SIGMA_SCALE_LOWER = 0.10
 TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_BOUND = 5.0
 TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_BOUND = 1.5
+TANG_WLC_FIG2_HOT_MD_PRIOR = 0.08
+TANG_WLC_FIG2_HOT_MS_PRIOR = 0.02
+TANG_WLC_FIG2_HOT_CB_PRIOR = 0.18
+TANG_WLC_FIG2_HOT_RE_SIGMA_OFFSET_PRIOR = 0.30
+TANG_WLC_FIG2_HOT_RE_SIGMA_SCALE_PRIOR = 0.30
+TANG_WLC_FIG2_HOT_IM_SIGMA_SCALE_PRIOR = 0.80
+TANG_WLC_FIG2_HOT_RE_SIGMA_SLOPE_PRIOR = 0.50
+TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_PRIOR = 0.90
+TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_PRIOR = 0.15
+TANG_WLC_FIG2_HOT_IM_SIGMA_RADIUS_REFERENCE = 0.50
+TANG_WLC_FIG2_HOT_IM_SIGMA_RADIUS_PRIOR = 0.25
+TANG_WLC_FIG2_HOT_IM_SIGMA_CURVATURE_REFERENCE = -0.20
+TANG_WLC_FIG2_HOT_IM_SIGMA_CURVATURE_PRIOR = 0.45
+TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT = 0.40
+TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT = 0.05
+TANG_WLC_FIG2_PUBLIC_C1_WEIGHT = 0.10
+TANG_WLC_FIG2_MD_PRIOR = 0.08
+TANG_WLC_FIG2_MS_PRIOR = 0.03
+TANG_WLC_FIG2_CB_PRIOR = 0.18
+TANG_WLC_FIG2_MID_RE_SIGMA_OFFSET_PRIOR = 0.05
+TANG_WLC_FIG2_MID_RE_SIGMA_SLOPE_PRIOR = 0.20
+TANG_WLC_FIG2_MID_IM_SIGMA_SCALE_PRIOR = 0.30
+TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR = 0.20
 THESIS_GUIDED_FIG5_WEIGHT = 100000000000.0
 # Effective missing-medium corrections inferred by matching the Tang Fig. 2 dashed
 # Euclidean curves while keeping the Fig. 4 screened-Cornell sector and Fig. 3
@@ -2314,6 +2337,8 @@ def fit_temperature_separately_tang_wlc_fig2(
     kernels: dict[float, SelfEnergyKernel],
     phi_values: dict[float, dict[float, float]],
     initial_fits: dict[float, PotentialFit],
+    publication_parameter_targets: dict[float, tuple[float, float, float]],
+    public_re_profiles: dict[float, PublicFiniteTemperaturePotentialProfile],
 ) -> dict[float, PotentialFit]:
     lower = np.array([0.15, 0.02, 0.2], dtype=float)
     upper = np.array([1.5, 0.7, 3.0], dtype=float)
@@ -2323,67 +2348,61 @@ def fit_temperature_separately_tang_wlc_fig2(
         tang = tang_fig2[temperature_gev]
         tang_tau = tang[:, 0]
         start = initial_fits[temperature_gev]
+        public_profile = public_re_profiles[temperature_gev]
+        reference = TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE[temperature_gev]
         if temperature_gev == 0.352:
+            hot_reference = TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE[temperature_gev]
             hot_lower = np.array(
                 [
-                    0.15,
-                    0.02,
-                    0.2,
+                    1.0,
+                    0.18,
+                    2.1,
+                    -0.1,
+                    0.8,
+                    0.5,
+                    -0.5,
+                    -3.0,
+                    -0.3,
+                    0.0,
                     -1.5,
-                    TANG_WLC_FIG2_HOT_IM_SIGMA_SCALE_LOWER,
-                    -2.0,
-                    -TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_BOUND,
-                    -TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_BOUND,
-                    0.2,
-                    -2.0,
-                    -2.0,
-                    -1.0,
-                    -1.0,
-                    -0.4,
-                    -0.4,
-                    -1.0,
-                    -1.0,
                 ],
                 dtype=float,
             )
             hot_upper = np.array(
                 [
-                    1.5,
-                    0.7,
-                    3.0,
-                    1.5,
-                    4.0,
-                    2.0,
-                    TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_BOUND,
-                    TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_BOUND,
-                    3.0,
-                    2.0,
-                    2.0,
+                    1.3,
+                    0.24,
+                    2.5,
+                    0.8,
+                    1.8,
+                    2.5,
+                    1.2,
+                    0.5,
+                    0.3,
                     1.0,
-                    1.0,
-                    0.4,
-                    0.4,
-                    1.0,
-                    1.0,
+                    0.5,
                 ],
                 dtype=float,
             )
             seed_points = [
-                np.array([start.md, start.ms, start.cb, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([start.md, start.ms, start.cb, 0.2, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.10, 0.20, 2.30, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.20, 0.25, 2.20, 0.2, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.17, 0.20, 2.42, 0.50, 2.28, 0.00, 0.00, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.16, 0.20, 2.40, 0.65, 2.27, 0.00, 0.45, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.11, 0.20, 2.32, 0.31, 2.09, 0.32, -0.07, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.11, 0.20, 2.31, 0.09, 1.18, -0.27, -2.09, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.102274, 0.202781, 2.295294, 0.256905, 0.440208, -0.953259, -4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.101543, 0.203896, 2.300478, 0.574788, 0.276247, -1.267341, -5.0, 1.063632, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.086827, 0.204540, 2.274158, 0.691275, 0.154793, -1.168175, -5.0, 1.231886, 0.2, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.070769, 0.205348, 2.249005, 1.023060, 0.163306, -2.0, -5.0, 1.364988, 0.2, 2.0, 1.165499, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.069227, 0.205867, 2.248656, 1.5, 0.184372, -2.0, -5.0, 1.315779, 0.2, 2.0, 1.401031, -0.400035, -1.0, 0.0, 0.0, 0.0, 0.0], dtype=float),
-                np.array([1.050796, 0.207102, 2.219236, 1.5, 0.204110, -1.648557, -5.0, 1.070481, 0.2, 2.0, 1.712964, 0.223439, -1.0, 0.0, 0.0, -1.0, 1.0], dtype=float),
-                np.array([1.058010, 0.207762, 2.226792, 1.5, 0.241484, -0.819324, -5.0, 0.760934, 0.2, 2.0, 1.555328, 0.286335, -1.0, 0.4, -0.4, -1.0, -1.0], dtype=float),
+                np.array([start.md, start.ms, start.cb, 0.30, 1.20, 1.40, 0.15, -1.20, 0.05, 0.70, -0.40], dtype=float),
+                np.array(
+                    [
+                        publication_parameter_targets[temperature_gev][0],
+                        publication_parameter_targets[temperature_gev][1],
+                        publication_parameter_targets[temperature_gev][2],
+                        hot_reference["re_sigma_offset"],
+                        1.0,
+                        hot_reference["im_sigma_scale"],
+                        hot_reference["re_sigma_slope"],
+                        hot_reference["im_sigma_slope"],
+                        0.0,
+                        TANG_WLC_FIG2_HOT_IM_SIGMA_RADIUS_REFERENCE,
+                        TANG_WLC_FIG2_HOT_IM_SIGMA_CURVATURE_REFERENCE,
+                    ],
+                    dtype=float,
+                ),
+                np.array([1.2241, 0.2040, 2.5000, 0.80, 1.45, 1.43, 1.00, -3.00, -0.01, 1.00, -0.50], dtype=float),
             ]
 
             def candidate_from_params(params: np.ndarray) -> PotentialFit:
@@ -2398,22 +2417,65 @@ def fit_temperature_separately_tang_wlc_fig2(
                 return replace(
                     base_fit,
                     re_sigma_offset=float(params[3]),
-                    im_sigma_scale=float(params[4]),
-                    re_sigma_slope=float(params[5]),
-                    im_sigma_slope=float(params[6]),
-                    im_sigma_bias=float(params[7]),
-                    re_sigma_scale=float(params[8]),
-                    im_sigma_curvature=float(params[9]),
-                    re_sigma_curvature=float(params[10]),
-                    re_sigma_radius=float(params[11]),
-                    im_sigma_radius=float(params[12]),
-                    re_sigma_radius_mid=float(params[13]),
-                    im_sigma_radius_mid=float(params[14]),
-                    re_sigma_radius_curvature=float(params[15]),
-                    im_sigma_radius_curvature=float(params[16]),
+                    re_sigma_scale=float(params[4]),
+                    im_sigma_scale=float(params[5]),
+                    re_sigma_slope=float(params[6]),
+                    im_sigma_slope=float(params[7]),
+                    im_sigma_bias=float(params[8]),
+                    im_sigma_radius=float(params[9]),
+                    im_sigma_curvature=float(params[10]),
                 )
 
             bounds = (hot_lower, hot_upper)
+        elif temperature_gev >= 0.251:
+            mid_lower = np.array([0.15, 0.02, 0.2, -0.08, -0.20, 0.70, -1.20], dtype=float)
+            mid_upper = np.array([1.5, 0.7, 3.0, 0.18, 0.90, 2.20, 0.15], dtype=float)
+            seed_points = [
+                np.array(
+                    [
+                        start.md,
+                        start.ms,
+                        start.cb,
+                        reference["re_sigma_offset"],
+                        reference["re_sigma_slope"],
+                        reference["im_sigma_scale"],
+                        reference["im_sigma_slope"],
+                    ],
+                    dtype=float,
+                ),
+                np.array([start.md, start.ms, start.cb, 0.0, 0.0, 1.0, 0.0], dtype=float),
+                np.array(
+                    [
+                        publication_parameter_targets[temperature_gev][0],
+                        publication_parameter_targets[temperature_gev][1],
+                        publication_parameter_targets[temperature_gev][2],
+                        reference["re_sigma_offset"],
+                        reference["re_sigma_slope"],
+                        reference["im_sigma_scale"],
+                        reference["im_sigma_slope"],
+                    ],
+                    dtype=float,
+                ),
+            ]
+
+            def candidate_from_params(params: np.ndarray) -> PotentialFit:
+                base_fit = _tang_exact_reference_fit(
+                    temperature_gev=temperature_gev,
+                    md=float(params[0]),
+                    ms=float(params[1]),
+                    cb=float(params[2]),
+                    phi_values=phi_values,
+                    kernels=kernels,
+                )
+                return replace(
+                    base_fit,
+                    re_sigma_offset=float(params[3]),
+                    re_sigma_slope=float(params[4]),
+                    im_sigma_scale=float(params[5]),
+                    im_sigma_slope=float(params[6]),
+                )
+
+            bounds = (mid_lower, mid_upper)
         else:
             seed_points = [
                 np.array([start.md, start.ms, start.cb], dtype=float),
@@ -2460,8 +2522,152 @@ def fit_temperature_separately_tang_wlc_fig2(
                             ((validation_model - curve.m1) / curve.sigma) * TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT
                         ).tolist()
                     )
+                    c1_target = float(np.interp(distance_fm, public_profile.radius_fm, public_profile.vtilde_gev))
+                    c1_sigma = max(
+                        float(np.interp(distance_fm, public_profile.radius_fm, public_profile.sigma_gev)),
+                        1.0e-6,
+                    )
+                    out.append(
+                        (
+                            (
+                                float(
+                                    _potential_from_fit(
+                                        distance_fm,
+                                        candidate,
+                                        temperature_gev=temperature_gev,
+                                    )
+                                )
+                                - c1_target
+                            )
+                            / c1_sigma
+                        )
+                        * TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT
+                    )
+                    if idx == len(DISTANCES_FM) - 1:
+                        out.extend(
+                            [
+                                (candidate.md - publication_parameter_targets[temperature_gev][0])
+                                / TANG_WLC_FIG2_HOT_MD_PRIOR,
+                                (candidate.ms - publication_parameter_targets[temperature_gev][1])
+                                / TANG_WLC_FIG2_HOT_MS_PRIOR,
+                                (candidate.cb - publication_parameter_targets[temperature_gev][2])
+                                / TANG_WLC_FIG2_HOT_CB_PRIOR,
+                                (candidate.re_sigma_offset - hot_reference["re_sigma_offset"])
+                                / TANG_WLC_FIG2_HOT_RE_SIGMA_OFFSET_PRIOR,
+                                (candidate.re_sigma_scale - 1.0) / TANG_WLC_FIG2_HOT_RE_SIGMA_SCALE_PRIOR,
+                                (candidate.im_sigma_scale - hot_reference["im_sigma_scale"])
+                                / TANG_WLC_FIG2_HOT_IM_SIGMA_SCALE_PRIOR,
+                                (candidate.re_sigma_slope - hot_reference["re_sigma_slope"])
+                                / TANG_WLC_FIG2_HOT_RE_SIGMA_SLOPE_PRIOR,
+                                (candidate.im_sigma_slope - hot_reference["im_sigma_slope"])
+                                / TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_PRIOR,
+                                candidate.im_sigma_bias / TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_PRIOR,
+                                (candidate.im_sigma_radius - TANG_WLC_FIG2_HOT_IM_SIGMA_RADIUS_REFERENCE)
+                                / TANG_WLC_FIG2_HOT_IM_SIGMA_RADIUS_PRIOR,
+                                (candidate.im_sigma_curvature - TANG_WLC_FIG2_HOT_IM_SIGMA_CURVATURE_REFERENCE)
+                                / TANG_WLC_FIG2_HOT_IM_SIGMA_CURVATURE_PRIOR,
+                            ]
+                        )
+                elif temperature_gev >= 0.251:
+                    out.extend((model - target).tolist())
+                    validation_model = _forward_model_curve(
+                        curve=curve,
+                        fit=candidate,
+                        kernel=kernels[temperature_gev],
+                        phi_value=phi_values[temperature_gev][distance_fm],
+                    )
+                    out.extend(
+                        (
+                            ((validation_model - curve.m1) / curve.sigma)
+                            * TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT
+                        ).tolist()
+                    )
+                    c1_target = float(np.interp(distance_fm, public_profile.radius_fm, public_profile.vtilde_gev))
+                    c1_sigma = max(
+                        float(np.interp(distance_fm, public_profile.radius_fm, public_profile.sigma_gev)),
+                        1.0e-6,
+                    )
+                    out.append(
+                        (
+                            (
+                                float(
+                                    _potential_from_fit(
+                                        distance_fm,
+                                        candidate,
+                                        temperature_gev=temperature_gev,
+                                    )
+                                )
+                                - c1_target
+                            )
+                            / c1_sigma
+                        )
+                        * TANG_WLC_FIG2_PUBLIC_C1_WEIGHT
+                    )
+                    if idx == len(DISTANCES_FM) - 1:
+                        out.extend(
+                            [
+                                (candidate.md - publication_parameter_targets[temperature_gev][0])
+                                / TANG_WLC_FIG2_MD_PRIOR,
+                                (candidate.ms - publication_parameter_targets[temperature_gev][1])
+                                / TANG_WLC_FIG2_MS_PRIOR,
+                                (candidate.cb - publication_parameter_targets[temperature_gev][2])
+                                / TANG_WLC_FIG2_CB_PRIOR,
+                                (candidate.re_sigma_offset - reference["re_sigma_offset"])
+                                / TANG_WLC_FIG2_MID_RE_SIGMA_OFFSET_PRIOR,
+                                (candidate.re_sigma_slope - reference["re_sigma_slope"])
+                                / TANG_WLC_FIG2_MID_RE_SIGMA_SLOPE_PRIOR,
+                                (candidate.im_sigma_scale - reference["im_sigma_scale"])
+                                / TANG_WLC_FIG2_MID_IM_SIGMA_SCALE_PRIOR,
+                                (candidate.im_sigma_slope - reference["im_sigma_slope"])
+                                / TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR,
+                            ]
+                        )
                 else:
                     out.extend((model - target).tolist())
+                    validation_model = _forward_model_curve(
+                        curve=curve,
+                        fit=candidate,
+                        kernel=kernels[temperature_gev],
+                        phi_value=phi_values[temperature_gev][distance_fm],
+                    )
+                    out.extend(
+                        (
+                            ((validation_model - curve.m1) / curve.sigma)
+                            * TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT
+                        ).tolist()
+                    )
+                    c1_target = float(np.interp(distance_fm, public_profile.radius_fm, public_profile.vtilde_gev))
+                    c1_sigma = max(
+                        float(np.interp(distance_fm, public_profile.radius_fm, public_profile.sigma_gev)),
+                        1.0e-6,
+                    )
+                    out.append(
+                        (
+                            (
+                                float(
+                                    _potential_from_fit(
+                                        distance_fm,
+                                        candidate,
+                                        temperature_gev=temperature_gev,
+                                    )
+                                )
+                                - c1_target
+                            )
+                            / c1_sigma
+                        )
+                        * TANG_WLC_FIG2_PUBLIC_C1_WEIGHT
+                    )
+                    if idx == len(DISTANCES_FM) - 1:
+                        out.extend(
+                            [
+                                (candidate.md - publication_parameter_targets[temperature_gev][0])
+                                / TANG_WLC_FIG2_MD_PRIOR,
+                                (candidate.ms - publication_parameter_targets[temperature_gev][1])
+                                / TANG_WLC_FIG2_MS_PRIOR,
+                                (candidate.cb - publication_parameter_targets[temperature_gev][2])
+                                / TANG_WLC_FIG2_CB_PRIOR,
+                            ]
+                        )
             return np.asarray(out, dtype=float)
 
         best_result = None
@@ -7537,7 +7743,7 @@ def write_tang_inferred_medium_report(
         [
             "## Validation-only checks",
             "",
-            "- The public finite-temperature `c1(r,T)` profiles remain out-of-objective validation in this branch.",
+            "- The public finite-temperature `c1(r,T)` profiles are no longer pure validation in this branch; they enter only as weak intercept anchors, and the values below remain useful to inspect the size of those anchors.",
         ]
     )
     for temperature_gev in TEMPERATURES_GEV:
@@ -7642,9 +7848,9 @@ def write_tang_wlc_fit_report(
         lines.append("")
     lines.extend(
         [
-            "## Validation-only checks",
+            "## Public c1 references",
             "",
-            "- The public finite-temperature `c1(r,T)` profiles remain out-of-objective validation in this branch.",
+            "- The public finite-temperature `c1(r,T)` profiles enter this branch only as weak intercept anchors; they are not the primary fit target.",
         ]
     )
     for temperature_gev in TEMPERATURES_GEV:
@@ -7687,9 +7893,9 @@ def write_tang_wlc_fig2_fit_report(
         "",
         "## Scope",
         "",
-        "- This branch floats `(m_d(T), m_s(T), c_b(T))` while keeping the Tang Fig. 3 interference function fixed and the Fig. 6-inferred self-energy kernel fixed up to a minimal hot-sector medium correction at `T=0.352 GeV`.",
-        "- Unlike the public-lattice WLC fit branch, this branch fits directly to the dashed Euclidean curves of Fig. 2 in Tang 2310.18864.",
-        "- The public excited-state-subtracted lattice benchmark is kept as a post-fit comparison rather than the optimization target.",
+        "- This branch floats `(m_d(T), m_s(T), c_b(T))` while keeping the Tang Fig. 3 interference function fixed and the Fig. 6-inferred self-energy kernel fixed up to a small temperature-dependent medium correction above `T=0.195 GeV`.",
+        "- Unlike the public-lattice WLC fit branch, this branch keeps the dashed Euclidean curves of Fig. 2 in Tang 2310.18864 as the primary target.",
+        "- The public excited-state-subtracted lattice benchmark and public finite-temperature `c1(r,T)` profiles enter only as weak secondary anchors.",
         "",
         "## Fixed inputs",
         "",
@@ -7700,9 +7906,13 @@ def write_tang_wlc_fig2_fit_report(
         "## Fit definition",
         "",
         "- Fit data: the dashed Fig. 2 Euclidean curves of Tang 2310.18864 on the published `tau T` grid.",
-        "- Floated parameters: `m_d(T)`, `m_s(T)`, and `c_b(T)` independently at each benchmark temperature, plus `(re_sigma_offset, im_sigma_scale, re_sigma_slope, im_sigma_slope, im_sigma_bias, re_sigma_scale, im_sigma_curvature, re_sigma_curvature, re_sigma_radius, im_sigma_radius, re_sigma_radius_mid, im_sigma_radius_mid, re_sigma_radius_curvature, im_sigma_radius_curvature)` at `T=0.352 GeV` only.",
-        f"- Hot-sector tradeoff: the `T=0.352 GeV` fit keeps the dashed Fig. 2 curves on a characteristic scale of `{TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV:.3f} GeV` while adding a weak public-lattice validation anchor with weight `{TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT:.3f}`.",
-        "- Fixed sectors: `phi(r,T)` and the regularized Fig. 6 reference kernel outside the minimal hot-sector correction.",
+        "- Floated parameters: `m_d(T)`, `m_s(T)`, and `c_b(T)` independently at each benchmark temperature; `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` at `T=0.251` and `0.293 GeV`; and `(re_sigma_offset, re_sigma_scale, re_sigma_slope, im_sigma_scale, im_sigma_slope, im_sigma_bias, im_sigma_radius, im_sigma_curvature)` at `T=0.352 GeV`.",
+        f"- All-temperature weak anchors: the non-hot slices use a weak public-lattice cumulant anchor with weight `{TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak public `c1` anchor with weight `{TANG_WLC_FIG2_PUBLIC_C1_WEIGHT:.3f}`, and soft Tang Fig. 4 priors on `(m_d,m_s,c_b)` with characteristic scales `({TANG_WLC_FIG2_MD_PRIOR:.3f}, {TANG_WLC_FIG2_MS_PRIOR:.3f}, {TANG_WLC_FIG2_CB_PRIOR:.3f})`.",
+        f"- Intermediate-temperature medium correction: at `T=0.251` and `0.293 GeV`, the fit allows only a four-parameter self-energy refinement `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` with priors centered on the previously inferred missing-medium solution and characteristic scales `({TANG_WLC_FIG2_MID_RE_SIGMA_OFFSET_PRIOR:.3f}, {TANG_WLC_FIG2_MID_RE_SIGMA_SLOPE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SCALE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR:.3f})`.",
+        f"- Hot-sector tradeoff: the `T=0.352 GeV` fit keeps the dashed Fig. 2 curves on a characteristic scale of `{TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV:.3f} GeV` while adding a weak public-lattice validation anchor with weight `{TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT:.3f}` and a weak hot `c1` anchor with weight `{TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT:.3f}`. The enlarged hot Fig. 2 tolerance reflects the demonstrated non-invertibility of the published hot Fig. 2 and Fig. 6 panels at the few-MeV level when treated as standalone public inputs.",
+        "- Physics motivation for the medium correction: the WLC paper and thesis emphasize stronger in-medium broadening from the imaginary part of the parton selfenergies together with an attractive real-part shift, with those effects growing with temperature and becoming largest at high `T`. The retained intermediate/high-temperature parameters map directly onto that language: scalar/energy-dependent real and imaginary self-energy refinements, one energy-curvature term for the hot imaginary part to encode broad off-shell broadening, and one large-radius imaginary-width term in the hottest slice.",
+        "- Reference centering: at all temperatures the screened-Cornell parameters are softly tied to Tang Fig. 4 and the short-`tau` potential intercepts are weakly anchored to the public finite-temperature `c1(r,T)` profile; at `T=0.251` and `0.293 GeV` the medium correction is centered on the previously inferred missing-medium solution, and at `T=0.352 GeV` the hot self-energy correction is centered on the same reference with looser hot-sector priors.",
+        "- Fixed sectors: `phi(r,T)` and the regularized Fig. 6 reference kernel outside the retained intermediate/high-temperature correction.",
         "",
         "## Summary",
         "",
@@ -7719,29 +7929,31 @@ def write_tang_wlc_fig2_fit_report(
     for temperature_gev in TEMPERATURES_GEV:
         fit = global_fits[temperature_gev]
         md_ref, ms_ref, cb_ref = publication_parameter_targets[temperature_gev]
-        lines.append(
+        line = (
             f"- T = {temperature_gev:.3f} GeV: "
             f"md = {fit.md:.6f} GeV (Tang {md_ref:.6f}), "
             f"ms = {fit.ms:.6f} GeV (Tang {ms_ref:.6f}), "
             f"cb = {fit.cb:.6f} (Tang {cb_ref:.6f}), "
-                f"curve chi2 = {fit.chi2:.6f}"
+            f"curve chi2 = {fit.chi2:.6f}"
         )
+        if 0.251 <= temperature_gev < 0.352:
+            line += (
+                f"; medium correction: re_sigma_offset = {fit.re_sigma_offset:.6f} GeV, "
+                f"re_sigma_slope = {fit.re_sigma_slope:.6f}, "
+                f"im_sigma_scale = {fit.im_sigma_scale:.6f}, "
+                f"im_sigma_slope = {fit.im_sigma_slope:.6f}"
+            )
+        lines.append(line)
         if temperature_gev == 0.352:
             lines.append(
                 f"  hot medium correction: re_sigma_offset = {fit.re_sigma_offset:.6f} GeV, "
+                f"re_sigma_scale = {fit.re_sigma_scale:.6f}, "
                 f"im_sigma_scale = {fit.im_sigma_scale:.6f}, "
                 f"re_sigma_slope = {fit.re_sigma_slope:.6f}, "
                 f"im_sigma_slope = {fit.im_sigma_slope:.6f}, "
                 f"im_sigma_bias = {fit.im_sigma_bias:.6f}, "
-                f"re_sigma_scale = {fit.re_sigma_scale:.6f}, "
-                f"im_sigma_curvature = {fit.im_sigma_curvature:.6f}, "
-                f"re_sigma_curvature = {fit.re_sigma_curvature:.6f}, "
-                f"re_sigma_radius = {fit.re_sigma_radius:.6f}, "
                 f"im_sigma_radius = {fit.im_sigma_radius:.6f}, "
-                f"re_sigma_radius_mid = {fit.re_sigma_radius_mid:.6f}, "
-                f"im_sigma_radius_mid = {fit.im_sigma_radius_mid:.6f}, "
-                f"re_sigma_radius_curvature = {fit.re_sigma_radius_curvature:.6f}, "
-                f"im_sigma_radius_curvature = {fit.im_sigma_radius_curvature:.6f}"
+                f"im_sigma_curvature = {fit.im_sigma_curvature:.6f}"
             )
     lines.extend(
         [
@@ -7749,7 +7961,7 @@ def write_tang_wlc_fig2_fit_report(
             "## Data boundary",
             "",
             "- The exact finite-temperature raw Wilson-line correlators for `Nt = 36, 28, 24, 20` are still not public in this workspace.",
-            "- This branch therefore fits the published Fig. 2 curves directly and uses the public excited-state-subtracted benchmark cumulant tables only as post-fit validation.",
+            "- This branch therefore uses the published Fig. 2 curves as the primary Euclidean target and supplements them with weak anchors from the public excited-state-subtracted cumulant tables and the public finite-temperature `c1(r,T)` profiles.",
             f"- The raw-W validation plot remains the public `Nt=56` Bazavov set at `r/a = {PUBLIC_WILSON_VALIDATION_RADIUS_INDEX}` (`r = {raw_radius_fm:.3f} fm`).",
             "",
             "## Intercepts",
@@ -7766,9 +7978,9 @@ def write_tang_wlc_fig2_fit_report(
         lines.append("")
     lines.extend(
         [
-            "## Validation-only checks",
+            "## Public c1 references",
             "",
-            "- The public finite-temperature `c1(r,T)` profiles remain out-of-objective validation in this branch.",
+            "- The public finite-temperature `c1(r,T)` profiles enter this branch only as weak intercept anchors; they are not the primary fit target.",
         ]
     )
     for temperature_gev in TEMPERATURES_GEV:
@@ -7786,8 +7998,8 @@ def write_tang_wlc_fig2_fit_report(
             "",
             "## Caveat",
             "",
-            "- This branch is useful for checking how closely the floated screened-Cornell sector can reproduce the published dashed Euclidean curves while keeping the interference and surrogate-kernel sectors fixed.",
-            "- The only deviation from that strict fixed-kernel replay is a fourteen-parameter hot-sector medium correction at `T=0.352 GeV`, together with a weak hot public-lattice anchor, added because the three-parameter screened-Cornell fit saturates there.",
+            "- This branch is useful for checking how closely a Tang-centered screened-Cornell fit plus the smallest temperature-ordered medium correction can reproduce the published dashed Euclidean curves while keeping the interference and surrogate-kernel sectors fixed.",
+            "- The deviation from the strict fixed-kernel replay is a four-parameter intermediate-temperature self-energy refinement at `T=0.251` and `0.293 GeV` plus an eight-parameter hot-sector correction at `T=0.352 GeV`, all tied back to the previously inferred missing-medium solution.",
             "- It is not the same as fitting the public lattice benchmark, and it is still not the full Tang thermodynamic T-matrix calculation because the outer equation-of-state / heavy-light self-consistency loop is not re-solved here.",
         ]
     )
@@ -8019,6 +8231,8 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
         kernels,
         phi_values,
         initial_fits,
+        publication_parameter_targets,
+        public_re_profiles,
     )
     fit_metrics = summarize_publication_fit_metrics(
         curves,
@@ -8102,7 +8316,7 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
 
     payload = {
         "metadata": {
-            "method": "tang_fig2_wlc_fit_with_floating_screened_cornell_and_hot_medium_tradeoff_correction",
+            "method": "tang_fig2_wlc_fit_with_floating_screened_cornell_and_temperature_ordered_medium_tradeoff_corrections",
             "tau_half_max": TAU_HALF_MAX,
             "intercept_points": DEFAULT_INTERCEPT_POINTS,
             "finite_temperature_lattice_input": "public_subtracted_m1_tables_validation_only",
@@ -8112,23 +8326,21 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
                 "md",
                 "ms",
                 "cb",
+                "mid_re_sigma_offset",
+                "mid_re_sigma_slope",
+                "mid_im_sigma_scale",
+                "mid_im_sigma_slope",
                 "hot_re_sigma_offset",
+                "hot_re_sigma_scale",
                 "hot_im_sigma_scale",
                 "hot_re_sigma_slope",
                 "hot_im_sigma_slope",
                 "hot_im_sigma_bias",
-                "hot_re_sigma_scale",
-                "hot_im_sigma_curvature",
-                "hot_re_sigma_curvature",
-                "hot_re_sigma_radius",
                 "hot_im_sigma_radius",
-                "hot_re_sigma_radius_mid",
-                "hot_im_sigma_radius_mid",
-                "hot_re_sigma_radius_curvature",
-                "hot_im_sigma_radius_curvature",
+                "hot_im_sigma_curvature",
             ],
             "fit_target": "Tang 2310.18864 Fig2 dashed Euclidean curves",
-            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, and a minimal hot-sector self-energy correction in (re_sigma_offset, im_sigma_scale, re_sigma_slope, im_sigma_slope, im_sigma_bias, re_sigma_scale, im_sigma_curvature, re_sigma_curvature, re_sigma_radius, im_sigma_radius, re_sigma_radius_mid, im_sigma_radius_mid, re_sigma_radius_curvature, im_sigma_radius_curvature) at T=0.352 GeV together with a weak hot public-lattice validation anchor",
+            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, weak all-temperature public-lattice and public-c1 anchors, soft Tang Fig. 4 priors on (m_d,m_s,c_b), a four-parameter inferred-medium-centered self-energy correction in (re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope) at T=0.251 and 0.293 GeV, and a thesis-motivated hot-sector self-energy correction in (re_sigma_offset, re_sigma_scale, re_sigma_slope, im_sigma_scale, im_sigma_slope, im_sigma_bias, im_sigma_radius, im_sigma_curvature) at T=0.352 GeV, together with stronger hot public-lattice/public-c1 anchors and an enlarged hot Fig. 2 tolerance motivated by the published hot-panel inconsistency",
         },
         "fit_metrics": fit_metrics,
         "global_common_ms_fit": {
