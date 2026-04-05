@@ -63,6 +63,35 @@ TANG_EXACT_REFERENCE_KERNEL_IMAG_SMOOTHING_BY_TEMPERATURE = {
 }
 TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS = 321
 THESIS_GUIDED_FIG5_WEIGHT = 100000000000.0
+# Effective missing-medium corrections inferred by matching the Tang Fig. 2 dashed
+# Euclidean curves while keeping the Fig. 4 screened-Cornell sector and Fig. 3
+# interference function fixed.
+TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE = {
+    0.195: {
+        "re_sigma_offset": 0.007057180594351814,
+        "re_sigma_slope": 0.4862170770075601,
+        "im_sigma_scale": 0.8424805669627918,
+        "im_sigma_slope": -0.3412034594937484,
+    },
+    0.251: {
+        "re_sigma_offset": 0.017410683917933795,
+        "re_sigma_slope": 0.32204357372591186,
+        "im_sigma_scale": 1.1355640551727062,
+        "im_sigma_slope": -0.41881098432737446,
+    },
+    0.293: {
+        "re_sigma_offset": 0.07161250512004064,
+        "re_sigma_slope": 0.3468263825590471,
+        "im_sigma_scale": 1.5301552860135021,
+        "im_sigma_slope": -0.5246819008023751,
+    },
+    0.352: {
+        "re_sigma_offset": 0.06186841297606755,
+        "re_sigma_slope": 0.5607154812541777,
+        "im_sigma_scale": 1.9246681007538573,
+        "im_sigma_slope": -0.5296805264569785,
+    },
+}
 SPECTRAL_SHAPE_WEIGHT = 1.5
 SPECTRAL_SHAPE_FLOOR = 1.0e-4
 SPECTRAL_SUMMARY_WEIGHT = 2.0
@@ -439,6 +468,27 @@ def _tang_exact_reference_fit(
         kernel_im1=kernel_center.kernel_im1,
         kernel_im2=kernel_center.kernel_im2,
     )
+
+
+def _tang_inferred_medium_fit(
+    *,
+    temperature_gev: float,
+    md: float,
+    ms: float,
+    cb: float,
+    phi_values: dict[float, dict[float, float]],
+    kernels: dict[float, SelfEnergyKernel],
+) -> PotentialFit:
+    base = _tang_exact_reference_fit(
+        temperature_gev=temperature_gev,
+        md=md,
+        ms=ms,
+        cb=cb,
+        phi_values=phi_values,
+        kernels=kernels,
+    )
+    corrections = TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE[round(float(temperature_gev), 3)]
+    return PotentialFit(**{**base.__dict__, **corrections})
 
 
 def screened_cornell_potential(
@@ -2048,22 +2098,18 @@ def _resummarize_fixed_forward_fits(
             )
             observed.extend(curve.m1.tolist())
             sigma.extend(curve.sigma.tolist())
-        summarized[temperature_gev] = _fit_summary(
-            np.asarray(predicted, dtype=float),
-            np.asarray(observed, dtype=float),
-            np.asarray(sigma, dtype=float),
-            md=fit.md,
-            ms=fit.ms,
-            cb=fit.cb,
-            phi_0224=fit.phi_0224,
-            phi_0505=fit.phi_0505,
-            phi_0757=fit.phi_0757,
-            kernel_re0=fit.kernel_re0,
-            kernel_re1=fit.kernel_re1,
-            kernel_re2=fit.kernel_re2,
-            kernel_im_log0=fit.kernel_im_log0,
-            kernel_im1=fit.kernel_im1,
-            kernel_im2=fit.kernel_im2,
+        predicted_arr = np.asarray(predicted, dtype=float)
+        observed_arr = np.asarray(observed, dtype=float)
+        sigma_arr = np.asarray(sigma, dtype=float)
+        residuals = predicted_arr - observed_arr
+        summarized[temperature_gev] = PotentialFit(
+            **{
+                **fit.__dict__,
+                "chi2": float(np.sum((residuals / sigma_arr) ** 2)),
+                "n_points": int(observed_arr.size),
+                "residuals": tuple(float(x) for x in residuals),
+                "residual_sigma": tuple(float(x) for x in sigma_arr),
+            }
         )
     return summarized
 
@@ -2260,6 +2306,42 @@ def summarize_publication_fit_metrics(
         "fig5_mae": float(np.mean(fig5_abs)),
         "fig6_peak_mean": float(np.mean(fig6_peak_abs)),
         "fig6_width_mean": float(np.mean(fig6_width_abs)),
+    }
+
+
+def summarize_tang_fig2_metrics(
+    curves: dict[float, dict[float, LatticeCurve]],
+    fits: dict[float, PotentialFit],
+    tang_fig2: dict[float, np.ndarray],
+    *,
+    fixed_kernels: dict[float, SelfEnergyKernel] | None = None,
+    fixed_phi_values: dict[float, dict[float, float]] | None = None,
+) -> dict[str, float]:
+    abs_residuals: list[float] = []
+    per_temperature: dict[str, float] = {}
+    for temperature_gev in TEMPERATURES_GEV:
+        tang = tang_fig2[temperature_gev]
+        tang_tau = tang[:, 0]
+        temperature_abs: list[float] = []
+        fit = fits[temperature_gev]
+        for idx, distance_fm in enumerate(DISTANCES_FM):
+            curve = curves[temperature_gev][distance_fm]
+            model = _forward_model_curve(
+                curve=curve,
+                fit=fit,
+                kernel=None if fixed_kernels is None else fixed_kernels[temperature_gev],
+                phi_value=None if fixed_phi_values is None else fixed_phi_values[temperature_gev][distance_fm],
+                tau_grid=tang_tau,
+            )
+            target = tang[:, 2 + 3 * idx]
+            delta = np.abs(model - target)
+            temperature_abs.extend(delta.tolist())
+            abs_residuals.extend(delta.tolist())
+        per_temperature[f"fig2_mae_T{temperature_gev:.3f}"] = float(np.mean(temperature_abs))
+    return {
+        "fig2_mae": float(np.mean(abs_residuals)),
+        "fig2_max_abs": float(np.max(abs_residuals)),
+        **per_temperature,
     }
 
 
@@ -7151,6 +7233,107 @@ def write_tang_exact_report(
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_tang_inferred_medium_report(
+    output_path: Path,
+    curves: dict[float, dict[float, LatticeCurve]],
+    intercepts: dict[float, dict[float, InterceptEstimate]],
+    global_fits: dict[float, PotentialFit],
+    raw_wilson_validation: dict[float, PublicWilsonValidationCurve],
+    public_re_profiles: dict[float, PublicFiniteTemperaturePotentialProfile],
+    fit_metrics: dict[str, float],
+    fig2_metrics: dict[str, float],
+) -> None:
+    total_curve_points = sum(_count_curve_points(curves, temperature_gev) for temperature_gev in TEMPERATURES_GEV)
+    raw_radius_fm = PUBLIC_WILSON_VALIDATION_RADIUS_INDEX * BAZAVOV_A_FM
+    lines = [
+        "# Task 1 Tang Replay with Inferred Missing-Medium Corrections Report",
+        "",
+        "## Scope",
+        "",
+        "- This branch keeps the Tang Fig. 4 screened-Cornell parameters and the Tang Fig. 3 interference function fixed.",
+        "- It also keeps the regularized Tang Fig. 6 reference kernel as the baseline medium input, but adds a low-dimensional temperature-local correction in `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` inferred from the Tang Fig. 2 dashed Euclidean curves.",
+        "- The purpose of this branch is diagnostic: identify the smallest effective missing-medium input that improves the Euclidean replay without changing the static screened-Cornell sector.",
+        "",
+        "## Fixed inputs",
+        "",
+        f"- Screened-Cornell constants: `alpha_s = {ALPHA_S}` and `sigma = {SIGMA} GeV^2`.",
+        "- The screened-Cornell parameters `(m_d(T), c_b(T))` and the common `m_s = 0.2 GeV` are fixed to Tang Fig. 4.",
+        "- `phi(r,T)` is fixed to the Tang Fig. 3 interpolators at each temperature.",
+        f"- The reference self-energy kernel is inferred from Tang Fig. 6 with Savitzky-Golay smoothing windows `{_format_tang_exact_smoothing()}` for the real part and `{_format_tang_exact_imag_smoothing()}` for the imaginary part on a dense grid of `{TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS}` points.",
+        "",
+        "## Summary",
+        "",
+        f"- Total Euclidean `chi2`: {fit_metrics['chi2']:.6f} for {total_curve_points} points (`chi2/ndof = {fit_metrics['chi2']/total_curve_points:.6f}` with `ndof = {total_curve_points}`).",
+        f"- Tang Fig. 2 dashed-curve MAE: {fig2_metrics['fig2_mae']:.6f} GeV; max deviation: {fig2_metrics['fig2_max_abs']:.6f} GeV.",
+        f"- Tang Fig. 4 `L1`: {fit_metrics['fig4_l1']:.6f}.",
+        f"- Tang Fig. 5 potential MAE: {fit_metrics['fig5_mae']:.6f} GeV.",
+        f"- Tang Fig. 6 mean peak mismatch: {fit_metrics['fig6_peak_mean']:.6f} GeV.",
+        f"- Tang Fig. 6 mean width mismatch: {fit_metrics['fig6_width_mean']:.6f} GeV.",
+        "",
+        "## Effective missing-medium corrections",
+        "",
+    ]
+    for temperature_gev in TEMPERATURES_GEV:
+        fit = global_fits[temperature_gev]
+        lines.append(
+            f"- T = {temperature_gev:.3f} GeV: "
+            f"re_sigma_offset = {fit.re_sigma_offset:+.6f}, "
+            f"re_sigma_slope = {fit.re_sigma_slope:+.6f}, "
+            f"im_sigma_scale = {fit.im_sigma_scale:+.6f}, "
+            f"im_sigma_slope = {fit.im_sigma_slope:+.6f}, "
+            f"curve chi2 = {fit.chi2:.6f}, "
+            f"Fig. 2 MAE = {fig2_metrics[f'fig2_mae_T{temperature_gev:.3f}']:.6f} GeV"
+        )
+    lines.extend(
+        [
+            "",
+            "## Data boundary",
+            "",
+            "- The exact finite-temperature raw Wilson-line correlators for `Nt = 36, 28, 24, 20` are still not public in this workspace.",
+            "- This replay therefore still uses the public excited-state-subtracted benchmark cumulant tables rather than the original line-by-line Wilson-line data stream.",
+            f"- The raw-W validation plot remains the public `Nt=56` Bazavov set at `r/a = {PUBLIC_WILSON_VALIDATION_RADIUS_INDEX}` (`r = {raw_radius_fm:.3f} fm`).",
+            "",
+            "## Intercepts",
+            "",
+        ]
+    )
+    for temperature_gev in TEMPERATURES_GEV:
+        lines.append(f"### T = {temperature_gev:.3f} GeV")
+        for distance_fm in DISTANCES_FM:
+            estimate = intercepts[temperature_gev][distance_fm]
+            lines.append(
+                f"- r = {distance_fm:.3f} fm: Vtilde = {estimate.intercept:.6f} +/- {estimate.intercept_sigma:.6f} GeV, slope = {estimate.slope:.6f} GeV"
+            )
+        lines.append("")
+    lines.extend(
+        [
+            "## Validation-only checks",
+            "",
+            "- The public finite-temperature `c1(r,T)` profiles remain out-of-objective validation in this branch.",
+        ]
+    )
+    for temperature_gev in TEMPERATURES_GEV:
+        profile = public_re_profiles[temperature_gev]
+        mask = np.isin(np.round(profile.radius_fm, 3), np.round(np.array(DISTANCES_FM), 3))
+        lines.append(
+            f"- T = {temperature_gev:.3f} GeV public c1 benchmark values: "
+            + ", ".join(
+                f"r={r:.3f} fm -> {v:.6f} +/- {s:.6f} GeV"
+                for r, v, s in zip(profile.radius_fm[mask], profile.vtilde_gev[mask], profile.sigma_gev[mask])
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "## Caveat",
+            "",
+            "- These inferred corrections should be interpreted as an effective stand-in for the missing self-consistent medium sector identified in the thesis, not as a unique reconstruction of the unpublished internal Tang inputs.",
+            "- The branch is therefore useful for diagnosing what kind of medium correction is needed to recover the dashed Euclidean curves, but it is not a replacement for the full thermodynamic / heavy-light self-consistency loop.",
+        ]
+    )
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def run_task1_tang_exact_benchmark(
     *,
     root: Path,
@@ -7276,6 +7459,200 @@ def run_task1_tang_exact_benchmark(
             "self_consistent_closure": "exact Tang Fig. 4 screened-Cornell replay with fixed phi(r,T) and fixed regularized reference kernel; no direct Fig5/Fig6/public c1/WLC->SCS terms in the evaluation",
         },
         "fit_metrics": fit_metrics,
+        "separate_fit": {
+            f"{temperature_gev:.3f}": _fit_record(separate_fits[temperature_gev])
+            for temperature_gev in TEMPERATURES_GEV
+        },
+        "global_common_ms_fit": {
+            f"{temperature_gev:.3f}": _fit_record(global_fits[temperature_gev])
+            for temperature_gev in TEMPERATURES_GEV
+        },
+        "intercepts": {
+            f"{temperature_gev:.3f}": {
+                f"{distance_fm:.3f}": asdict(intercepts[temperature_gev][distance_fm])
+                for distance_fm in DISTANCES_FM
+            }
+            for temperature_gev in TEMPERATURES_GEV
+        },
+        "public_raw_wilson_validation": {
+            f"{flow_time_a2:.3f}": {
+                "radius_index": curve.radius_index,
+                "radius_fm": curve.radius_index * BAZAVOV_A_FM,
+                "tau_fm": curve.tau_fm.tolist(),
+                "m1": curve.m1.tolist(),
+                "sigma": curve.sigma.tolist(),
+            }
+            for flow_time_a2, curve in raw_wilson_validation.items()
+        },
+        "public_finite_temperature_c1_profiles": {
+            f"{temperature_gev:.3f}": {
+                "radius_fm": profile.radius_fm.tolist(),
+                "vtilde_gev": profile.vtilde_gev.tolist(),
+                "sigma_gev": profile.sigma_gev.tolist(),
+            }
+            for temperature_gev, profile in public_re_profiles.items()
+        },
+        "spectral_summary": {
+            key: {
+                "temperature_gev": value["temperature_gev"],
+                "distance_fm": value["distance_fm"],
+                "potential_gev": value["potential_gev"],
+                "phi_value": value["phi_value"],
+                "model": {
+                    "peak_energy_gev": value["model"]["peak_energy_gev"],
+                    "peak_height": value["model"]["peak_height"],
+                    "fwhm_gev": value["model"]["fwhm_gev"],
+                    "centroid_gev": value["model"]["centroid_gev"],
+                },
+                "tang_reference": {
+                    "peak_energy_gev": value["tang_reference"]["peak_energy_gev"],
+                    "peak_height": value["tang_reference"]["peak_height"],
+                    "fwhm_gev": value["tang_reference"]["fwhm_gev"],
+                    "centroid_gev": value["tang_reference"]["centroid_gev"],
+                },
+            }
+            for key, value in spectral_outputs.items()
+        },
+        "spectral_ansatz_sensitivity": ansatz_sensitivity,
+    }
+    params_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
+def run_task1_tang_inferred_medium_benchmark(
+    *,
+    root: Path,
+    output_dir: Path,
+) -> dict[str, object]:
+    curves = load_lattice_curves(root)
+    intercepts = estimate_intercepts(curves)
+    kernels = infer_reference_self_energy_kernels(
+        root,
+        smoothing_window=TANG_EXACT_REFERENCE_KERNEL_SMOOTHING_BY_TEMPERATURE,
+        imag_smoothing_window=TANG_EXACT_REFERENCE_KERNEL_IMAG_SMOOTHING_BY_TEMPERATURE,
+        dense_energy_points=TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS,
+    )
+    phi_interpolators = build_phi_interpolators(root)
+    phi_values = _phi_values(root)
+    publication_parameter_targets = load_tang_fig4_targets(root)
+    spectral_targets = load_tang_fig6_targets(root)
+    publication_potential_targets = load_tang_fig5_targets(root)
+    tang_fig2 = load_tang_fig2(root)
+    tang_fig5 = load_tang_fig5(root)
+    raw_wilson_validation = load_public_zero_temperature_wilson_validation(root)
+    public_re_profiles = load_public_finite_temperature_potential_profiles(root)
+
+    separate_fits = {
+        temperature_gev: _tang_inferred_medium_fit(
+            temperature_gev=temperature_gev,
+            md=publication_parameter_targets[temperature_gev][0],
+            ms=publication_parameter_targets[temperature_gev][1],
+            cb=publication_parameter_targets[temperature_gev][2],
+            phi_values=phi_values,
+            kernels=kernels,
+        )
+        for temperature_gev in TEMPERATURES_GEV
+    }
+    separate_fits = _resummarize_fixed_forward_fits(curves, separate_fits, kernels, phi_values)
+    global_fits = dict(separate_fits)
+    fit_metrics = summarize_publication_fit_metrics(
+        curves,
+        global_fits,
+        publication_parameter_targets,
+        publication_potential_targets,
+        spectral_targets,
+        fixed_kernels=kernels,
+        fixed_phi_values=phi_values,
+    )
+    fig2_metrics = summarize_tang_fig2_metrics(
+        curves,
+        global_fits,
+        tang_fig2,
+        fixed_kernels=kernels,
+        fixed_phi_values=phi_values,
+    )
+    spectral_outputs = build_spectral_benchmark_outputs(
+        root,
+        global_fits,
+        kernels,
+        phi_values,
+        fixed_kernels=kernels,
+        fixed_phi_values=phi_values,
+    )
+    ansatz_sensitivity = build_spectral_ansatz_sensitivity(spectral_outputs)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    m1_plot = output_dir / "plot_m1_reproduction.png"
+    vtilde_plot = output_dir / "plot_Vtilde_extracted.png"
+    performance_plot = output_dir / "plot_fit_performance.png"
+    raw_wilson_plot = output_dir / "plot_public_wilson_validation.png"
+    public_c1_plot = output_dir / "plot_public_c1_validation.png"
+    phi_plot = output_dir / "plot_phi_extracted.png"
+    fig4_plot = output_dir / "plot_fig4_parameter_comparison.png"
+    spectral_plot = output_dir / "plot_spectral_extraction.png"
+    spectral_ansatz_plot = output_dir / "plot_spectral_ansatz_sensitivity.png"
+    params_json = output_dir / "fit_params.json"
+    spectral_json = output_dir / "spectral_functions.json"
+    spectral_ansatz_json = output_dir / "spectral_ansatz_sensitivity.json"
+    report_md = output_dir / "report.md"
+
+    plot_m1_reproduction(
+        curves,
+        global_fits,
+        kernels,
+        phi_values,
+        tang_fig2,
+        m1_plot,
+        fixed_kernels=kernels,
+        fixed_phi_values=phi_values,
+        title="Task 1: Tang replay with inferred missing-medium corrections",
+    )
+    plot_vtilde_extracted(intercepts, separate_fits, global_fits, tang_fig5, vtilde_plot)
+    plot_fit_performance(intercepts, global_fits, performance_plot)
+    plot_public_zero_temperature_wilson_validation(raw_wilson_validation, raw_wilson_plot)
+    plot_public_finite_temperature_potential_validation(public_re_profiles, global_fits, public_c1_plot)
+    plot_phi_extracted(
+        root,
+        global_fits,
+        phi_plot,
+        fixed_phi_interpolators=phi_interpolators,
+        title="Task 1: fixed Tang interference function replay with inferred medium corrections",
+    )
+    plot_fig4_parameter_comparison(root, global_fits, fig4_plot)
+    plot_spectral_extraction(spectral_outputs, spectral_plot)
+    plot_spectral_ansatz_sensitivity(ansatz_sensitivity, spectral_ansatz_plot)
+    spectral_json.write_text(json.dumps(spectral_outputs, indent=2) + "\n", encoding="utf-8")
+    spectral_ansatz_json.write_text(json.dumps(ansatz_sensitivity, indent=2) + "\n", encoding="utf-8")
+    write_tang_inferred_medium_report(
+        report_md,
+        curves,
+        intercepts,
+        global_fits,
+        raw_wilson_validation,
+        public_re_profiles,
+        fit_metrics,
+        fig2_metrics,
+    )
+
+    payload = {
+        "metadata": {
+            "method": "thesis_guided_fixed_phi_replay_with_inferred_missing_medium_corrections",
+            "tau_half_max": TAU_HALF_MAX,
+            "intercept_points": DEFAULT_INTERCEPT_POINTS,
+            "finite_temperature_lattice_input": "public_subtracted_m1_tables_only",
+            "finite_temperature_raw_wilson_publicly_available": False,
+            "fixed_phi_source": "Tang 2310.18864 Fig3 interpolators",
+            "reference_self_energy_source": f"Tang 2310.18864 Fig6 inferred kernel with effective low-dimensional missing-medium correction (Re: {_format_tang_exact_smoothing()}; Im: {_format_tang_exact_imag_smoothing()}; dense grid: {TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS})",
+            "fixed_ms_gev": 0.2,
+            "fit_parameters": [
+                "re_sigma_offset(T)",
+                "re_sigma_slope(T)",
+                "im_sigma_scale(T)",
+                "im_sigma_slope(T)",
+            ],
+            "self_consistent_closure": "exact Tang Fig. 4 screened-Cornell replay with fixed phi(r,T), fixed regularized reference kernel, and an inferred low-dimensional self-energy correction chosen to reproduce the Tang Fig. 2 dashed Euclidean curves as closely as possible while staying near Fig. 6",
+        },
+        "fit_metrics": {**fit_metrics, **fig2_metrics},
         "separate_fit": {
             f"{temperature_gev:.3f}": _fit_record(separate_fits[temperature_gev])
             for temperature_gev in TEMPERATURES_GEV
