@@ -19,6 +19,7 @@ def _import_task1_runners():
         run_task1_publication_locked_benchmark,
         run_task1_publication_smoothed_benchmark,
         run_task1_tang_exact_benchmark,
+        run_task1_tang_wlc_fit_benchmark,
         run_task1_tang_inferred_medium_benchmark,
     )
 
@@ -27,6 +28,7 @@ def _import_task1_runners():
         run_task1_publication_locked_benchmark,
         run_task1_publication_smoothed_benchmark,
         run_task1_tang_exact_benchmark,
+        run_task1_tang_wlc_fit_benchmark,
         run_task1_tang_inferred_medium_benchmark,
     )
 
@@ -129,6 +131,20 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Destination directory for the Tang-style reduced static replay outputs.",
     )
 
+    task1_tang_wlc_fit_parser = subparsers.add_parser("task1-tang-wlc-fit")
+    task1_tang_wlc_fit_parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path("."),
+        help="Workspace root containing lattice and ancillary data.",
+    )
+    task1_tang_wlc_fit_parser.add_argument(
+        "--out",
+        type=Path,
+        default=Path("results/task1_tang_wlc_fit"),
+        help="Destination directory for the Tang-style WLC fit with floating screened-Cornell parameters.",
+    )
+
     task1_tang_inferred_medium_parser = subparsers.add_parser("task1-tang-inferred-medium")
     task1_tang_inferred_medium_parser.add_argument(
         "--root",
@@ -184,21 +200,21 @@ def _demo_wlc() -> int:
 
 
 def _task1_benchmark(args: argparse.Namespace) -> int:
-    run_task1_benchmark, _, _, _, _ = _import_task1_runners()
+    run_task1_benchmark, _, _, _, _, _ = _import_task1_runners()
     payload = run_task1_benchmark(root=args.root.resolve(), output_dir=args.out.resolve())
     print(json.dumps(payload["global_common_ms_fit"], indent=2))
     return 0
 
 
 def _task1_publication_faithful(args: argparse.Namespace) -> int:
-    run_task1_benchmark, _, _, _, _ = _import_task1_runners()
+    run_task1_benchmark, _, _, _, _, _ = _import_task1_runners()
     payload = run_task1_benchmark(root=args.root.resolve(), output_dir=args.out.resolve())
     print(json.dumps(payload["global_common_ms_fit"], indent=2))
     return 0
 
 
 def _task1_publication_locked(args: argparse.Namespace) -> int:
-    _, run_task1_publication_locked_benchmark, _, _, _ = _import_task1_runners()
+    _, run_task1_publication_locked_benchmark, _, _, _, _ = _import_task1_runners()
     payload = run_task1_publication_locked_benchmark(
         root=args.root.resolve(),
         output_dir=args.out.resolve(),
@@ -208,7 +224,7 @@ def _task1_publication_locked(args: argparse.Namespace) -> int:
 
 
 def _task1_publication_smoothed(args: argparse.Namespace) -> int:
-    _, _, run_task1_publication_smoothed_benchmark, _, _ = _import_task1_runners()
+    _, _, run_task1_publication_smoothed_benchmark, _, _, _ = _import_task1_runners()
     payload = run_task1_publication_smoothed_benchmark(
         root=args.root.resolve(),
         output_dir=args.out.resolve(),
@@ -218,7 +234,7 @@ def _task1_publication_smoothed(args: argparse.Namespace) -> int:
 
 
 def _task1_tang_exact(args: argparse.Namespace) -> int:
-    _, _, _, run_task1_tang_exact_benchmark, _ = _import_task1_runners()
+    _, _, _, run_task1_tang_exact_benchmark, _, _ = _import_task1_runners()
     payload = run_task1_tang_exact_benchmark(
         root=args.root.resolve(),
         output_dir=args.out.resolve(),
@@ -227,8 +243,18 @@ def _task1_tang_exact(args: argparse.Namespace) -> int:
     return 0
 
 
+def _task1_tang_wlc_fit(args: argparse.Namespace) -> int:
+    _, _, _, _, run_task1_tang_wlc_fit_benchmark, _ = _import_task1_runners()
+    payload = run_task1_tang_wlc_fit_benchmark(
+        root=args.root.resolve(),
+        output_dir=args.out.resolve(),
+    )
+    print(json.dumps(payload["global_common_ms_fit"], indent=2))
+    return 0
+
+
 def _task1_tang_inferred_medium(args: argparse.Namespace) -> int:
-    _, _, _, _, run_task1_tang_inferred_medium_benchmark = _import_task1_runners()
+    _, _, _, _, _, run_task1_tang_inferred_medium_benchmark = _import_task1_runners()
     payload = run_task1_tang_inferred_medium_benchmark(
         root=args.root.resolve(),
         output_dir=args.out.resolve(),
@@ -257,6 +283,8 @@ def main(argv: list[str] | None = None) -> int:
         return _task1_publication_smoothed(args)
     if args.command == "task1-tang-exact":
         return _task1_tang_exact(args)
+    if args.command == "task1-tang-wlc-fit":
+        return _task1_tang_wlc_fit(args)
     if args.command == "task1-tang-inferred-medium":
         return _task1_tang_inferred_medium(args)
     if args.command == "demo-wlc":
