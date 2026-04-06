@@ -371,6 +371,8 @@ def static_spectral_function(
     spectral_soft_mode_amp: float = 0.0,
     spectral_soft_mode_drop: float = 0.0,
     spectral_soft_mode_width: float = 0.0,
+    gluon_gap_strength: float = 0.0,
+    gluon_gap_gev: float = 0.0,
     distance_shape: float = 0.0,
 ) -> np.ndarray:
     shape_coordinate = energy_shape_coordinate(kernel.energies)
@@ -393,6 +395,15 @@ def static_spectral_function(
         + im_sigma_radius_curvature * distance_curvature
         + im_sigma_radius_mid * distance_mid
     ) - im_sigma_bias * distance_shape
+    gap_strength = max(float(gluon_gap_strength), 0.0)
+    gap_gev = max(float(gluon_gap_gev), 0.0)
+    if gap_strength > 0.0 and gap_gev > 0.0:
+        soft_distance = max(float(distance_shape), 0.0)
+        gap_center = float(potential - 0.6 * gap_gev * soft_distance * soft_distance)
+        gap_width = gap_gev * (0.90 + 0.35 * soft_distance)
+        gap_profile = np.exp(-0.5 * ((kernel.energies - gap_center) / gap_width) ** 2)
+        damping = np.clip(1.0 - gap_strength * gap_profile, 0.15, 1.0)
+        imag_part = imag_part * damping
     real_denominator = kernel.energies - potential - phi_value * real_part
     width = -phi_value * imag_part
     spectral_density = width / (np.pi * (real_denominator**2 + width**2))
@@ -452,6 +463,8 @@ def model_cumulant_curve(
     spectral_soft_mode_amp: float = 0.0,
     spectral_soft_mode_drop: float = 0.0,
     spectral_soft_mode_width: float = 0.0,
+    gluon_gap_strength: float = 0.0,
+    gluon_gap_gev: float = 0.0,
     distance_shape: float = 0.0,
     anchor_to_potential: bool = True,
 ) -> np.ndarray:
@@ -480,6 +493,8 @@ def model_cumulant_curve(
         spectral_soft_mode_amp=spectral_soft_mode_amp,
         spectral_soft_mode_drop=spectral_soft_mode_drop,
         spectral_soft_mode_width=spectral_soft_mode_width,
+        gluon_gap_strength=gluon_gap_strength,
+        gluon_gap_gev=gluon_gap_gev,
         distance_shape=distance_shape,
     )
     tau_phys = tau_t / float(temperature_gev)

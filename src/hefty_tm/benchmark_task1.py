@@ -99,6 +99,10 @@ TANG_WLC_FIG2_HOT_SOFT_MODE_DROP_REFERENCE = 0.18
 TANG_WLC_FIG2_HOT_SOFT_MODE_DROP_PRIOR = 0.06
 TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_REFERENCE = 0.36
 TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_PRIOR = 0.10
+TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_REFERENCE = 0.30
+TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_PRIOR = 0.12
+TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_REFERENCE = 0.22
+TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_PRIOR = 0.05
 TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT = 0.19
 TANG_WLC_FIG2_PUBLIC_C1_WEIGHT = 0.10
 TANG_WLC_FIG2_MD_PRIOR = 0.0525
@@ -315,6 +319,8 @@ class PotentialFit:
     spectral_soft_mode_amp: float = 0.0
     spectral_soft_mode_drop: float = 0.0
     spectral_soft_mode_width: float = 0.0
+    gluon_gap_strength: float = 0.0
+    gluon_gap_gev: float = 0.0
     phi_0224: float = 0.35
     phi_0505: float = 0.75
     phi_0757: float = 1.0
@@ -863,6 +869,8 @@ def _model_spectral_curve(
         spectral_soft_mode_amp=fit.spectral_soft_mode_amp,
         spectral_soft_mode_drop=fit.spectral_soft_mode_drop,
         spectral_soft_mode_width=fit.spectral_soft_mode_width,
+        gluon_gap_strength=fit.gluon_gap_strength,
+        gluon_gap_gev=fit.gluon_gap_gev,
         distance_shape=_distance_shape(distance_fm),
     )
     return potential, model_rho
@@ -1554,6 +1562,8 @@ def _forward_model_curve(
         spectral_soft_mode_amp=fit.spectral_soft_mode_amp,
         spectral_soft_mode_drop=fit.spectral_soft_mode_drop,
         spectral_soft_mode_width=fit.spectral_soft_mode_width,
+        gluon_gap_strength=fit.gluon_gap_strength,
+        gluon_gap_gev=fit.gluon_gap_gev,
         distance_shape=_distance_shape(curve.distance_fm),
         anchor_to_potential=True,
     )
@@ -2445,14 +2455,16 @@ def fit_temperature_separately_tang_wlc_fig2(
                     0.0,
                     0.04,
                     0.25,
+                    0.0,
+                    0.12,
                 ],
                 dtype=float,
             )
             hot_upper = np.array(
                 [
-                    1.18,
+                    1.22,
                     0.22,
-                    2.30,
+                    2.35,
                     0.05,
                     2.8,
                     0.5,
@@ -2461,6 +2473,8 @@ def fit_temperature_separately_tang_wlc_fig2(
                     0.45,
                     0.28,
                     0.70,
+                    0.60,
+                    0.32,
                 ],
                 dtype=float,
             )
@@ -2478,6 +2492,8 @@ def fit_temperature_separately_tang_wlc_fig2(
                         TANG_WLC_FIG2_HOT_SOFT_MODE_AMP_REFERENCE,
                         TANG_WLC_FIG2_HOT_SOFT_MODE_DROP_REFERENCE,
                         TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_REFERENCE,
+                        TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_REFERENCE,
+                        TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_REFERENCE,
                     ],
                     dtype=float,
                 ),
@@ -2494,6 +2510,8 @@ def fit_temperature_separately_tang_wlc_fig2(
                         TANG_WLC_FIG2_HOT_SOFT_MODE_AMP_REFERENCE,
                         TANG_WLC_FIG2_HOT_SOFT_MODE_DROP_REFERENCE,
                         TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_REFERENCE,
+                        TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_REFERENCE,
+                        TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_REFERENCE,
                     ],
                     dtype=float,
                 ),
@@ -2510,6 +2528,8 @@ def fit_temperature_separately_tang_wlc_fig2(
                         0.25,
                         0.18,
                         0.45,
+                        0.25,
+                        0.22,
                     ],
                     dtype=float,
                 ),
@@ -2540,6 +2560,8 @@ def fit_temperature_separately_tang_wlc_fig2(
                     spectral_soft_mode_amp=float(params[8]),
                     spectral_soft_mode_drop=float(params[9]),
                     spectral_soft_mode_width=float(params[10]),
+                    gluon_gap_strength=float(params[11]),
+                    gluon_gap_gev=float(params[12]),
                 )
 
             bounds = (hot_lower, hot_upper)
@@ -2797,6 +2819,10 @@ def fit_temperature_separately_tang_wlc_fig2(
                         / TANG_WLC_FIG2_HOT_SOFT_MODE_DROP_PRIOR,
                         (candidate.spectral_soft_mode_width - TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_REFERENCE)
                         / TANG_WLC_FIG2_HOT_SOFT_MODE_WIDTH_PRIOR,
+                        (candidate.gluon_gap_strength - TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_REFERENCE)
+                        / TANG_WLC_FIG2_HOT_GLUON_GAP_STRENGTH_PRIOR,
+                        (candidate.gluon_gap_gev - TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_REFERENCE)
+                        / TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_PRIOR,
                     ]
                 )
                 out.extend(
@@ -7392,6 +7418,8 @@ def _fit_record(fit: PotentialFit) -> dict[str, object]:
         "spectral_soft_mode_amp": fit.spectral_soft_mode_amp,
         "spectral_soft_mode_drop": fit.spectral_soft_mode_drop,
         "spectral_soft_mode_width": fit.spectral_soft_mode_width,
+        "gluon_gap_strength": fit.gluon_gap_strength,
+        "gluon_gap_gev": fit.gluon_gap_gev,
         "chi2": fit.chi2,
         "n_points": fit.n_points,
         "residuals": list(fit.residuals),
@@ -8085,12 +8113,12 @@ def write_tang_wlc_fig2_fit_report(
         "## Fit definition",
         "",
         "- Fit data: the dashed Fig. 2 Euclidean curves of Tang 2310.18864 on the published `tau T` grid.",
-        "- Floated parameters: `m_d(T)`, `m_s(T)`, and `c_b(T)` independently at each benchmark temperature; `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` at `T=0.251` and `0.293 GeV`; and `(re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width)` at `T=0.352 GeV`.",
+        "- Floated parameters: `m_d(T)`, `m_s(T)`, and `c_b(T)` independently at each benchmark temperature; `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` at `T=0.251` and `0.293 GeV`; and `(re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width, gluon_gap_strength, gluon_gap_gev)` at `T=0.352 GeV`.",
         f"- All-temperature weak anchors: the non-hot slices use a weak public-lattice cumulant anchor with weight `{TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak public `c1` anchor with weight `{TANG_WLC_FIG2_PUBLIC_C1_WEIGHT:.3f}`, and soft Tang Fig. 4 priors on `(m_d,m_s,c_b)` with characteristic scales `({TANG_WLC_FIG2_MD_PRIOR:.3f}, {TANG_WLC_FIG2_MS_PRIOR:.3f}, {TANG_WLC_FIG2_CB_PRIOR:.3f})`.",
         f"- Intermediate-temperature medium correction: at `T=0.251` and `0.293 GeV`, the fit allows only a four-parameter self-energy refinement `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` with priors centered on the previously inferred missing-medium solution and characteristic scales `({TANG_WLC_FIG2_MID_RE_SIGMA_OFFSET_PRIOR:.3f}, {TANG_WLC_FIG2_MID_RE_SIGMA_SLOPE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SCALE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR:.3f})`.",
         f"- Hot-sector tradeoff: the `T=0.352 GeV` fit keeps the dashed Fig. 2 curves on a characteristic scale of `{TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV:.3f} GeV`, but the hot Fig. 2 and public-lattice validation blocks are normalized by block size before weighting so the Euclidean points do not numerically overwhelm the spectral sanity terms. The hot branch then adds a weak public-lattice validation anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak hot `c1` anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT:.3f}`, and explicit hot spectral sanity terms with shape weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SHAPE_WEIGHT:.3f}`, summary weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SUMMARY_WEIGHT:.3f}`, centroid-to-potential weight `{TANG_WLC_FIG2_HOT_CENTROID_WEIGHT:.3f}`, and direct target-centroid weight `{TANG_WLC_FIG2_HOT_TARGET_CENTROID_WEIGHT:.3f}`. The enlarged hot Fig. 2 tolerance reflects the demonstrated non-invertibility of the published hot Fig. 2 and Fig. 6 panels at the few-MeV level when treated as standalone public inputs.",
-        "- Physics motivation for the medium correction: the WLC paper, the thesis, and the Wilson-line potential analyses all point to the highest-temperature mismatch being primarily a broadening/off-shell problem in the imaginary sector, while the real part remains much less screened than older Debye-screened expectations. The retained intermediate/high-temperature parameters map directly onto that language: scalar/energy-dependent real and imaginary self-energy refinements at intermediate temperature, and at `T=0.352 GeV` a reduced hot correction with one small real offset, an imaginary broadening amplitude plus large-radius/curvature terms, and a condensation-inspired soft mode that transfers a controlled fraction of spectral weight into a broad low-energy component without reopening large real-part drift or inventing extra spectral area.",
-        "- Reference centering: at all temperatures the screened-Cornell parameters are softly tied to Tang Fig. 4 and the short-`tau` potential intercepts are weakly anchored to the public finite-temperature `c1(r,T)` profile; at `T=0.251` and `0.293 GeV` the medium correction is centered on the previously inferred missing-medium solution, and at `T=0.352 GeV` the hot self-energy correction is centered on the same reference while the added hot spectral-shape, peak/width, centroid-to-potential, direct target-centroid, and low-energy soft-mode priors suppress unphysical high-energy/narrow-peak solutions.",
+        "- Physics motivation for the medium correction: the WLC paper, the thesis, and the Wilson-line potential analyses all point to the highest-temperature mismatch being primarily a broadening/off-shell problem in the imaginary sector, while the real part remains much less screened than older Debye-screened expectations. The retained intermediate/high-temperature parameters map directly onto that language: scalar/energy-dependent real and imaginary self-energy refinements at intermediate temperature, and at `T=0.352 GeV` a reduced hot correction with one small real offset, an imaginary broadening amplitude plus large-radius/curvature terms, a condensation-inspired soft mode that transfers a controlled fraction of spectral weight into a broad low-energy component without inventing extra spectral area, and a surrogate infrared gluon-gap regulator that damps the would-be low-energy divergence in the hot imaginary kernel so the fit can explore slightly stronger long-distance attraction without reopening the runaway high-energy peak pathology.",
+        "- Reference centering: at all temperatures the screened-Cornell parameters are softly tied to Tang Fig. 4 and the short-`tau` potential intercepts are weakly anchored to the public finite-temperature `c1(r,T)` profile; at `T=0.251` and `0.293 GeV` the medium correction is centered on the previously inferred missing-medium solution, and at `T=0.352 GeV` the hot self-energy correction is centered on the same reference while the added hot spectral-shape, peak/width, centroid-to-potential, direct target-centroid, low-energy soft-mode, and infrared-gap priors suppress unphysical high-energy/narrow-peak solutions.",
         "- Fixed sectors: `phi(r,T)` and the regularized Fig. 6 reference kernel outside the retained intermediate/high-temperature correction.",
         "",
         "## Summary",
@@ -8132,7 +8160,9 @@ def write_tang_wlc_fig2_fit_report(
                 f"im_sigma_curvature = {fit.im_sigma_curvature:.6f}, "
                 f"spectral_soft_mode_amp = {fit.spectral_soft_mode_amp:.6f}, "
                 f"spectral_soft_mode_drop = {fit.spectral_soft_mode_drop:.6f} GeV, "
-                f"spectral_soft_mode_width = {fit.spectral_soft_mode_width:.6f} GeV"
+                f"spectral_soft_mode_width = {fit.spectral_soft_mode_width:.6f} GeV, "
+                f"gluon_gap_strength = {fit.gluon_gap_strength:.6f}, "
+                f"gluon_gap_gev = {fit.gluon_gap_gev:.6f} GeV"
             )
     lines.extend(
         [
@@ -8518,9 +8548,11 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
                 "hot_spectral_soft_mode_amp",
                 "hot_spectral_soft_mode_drop",
                 "hot_spectral_soft_mode_width",
+                "hot_gluon_gap_strength",
+                "hot_gluon_gap_gev",
             ],
             "fit_target": "Tang 2310.18864 Fig2 dashed Euclidean curves",
-            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, weak all-temperature public-lattice and public-c1 anchors, soft Tang Fig. 4 priors on (m_d,m_s,c_b), a four-parameter inferred-medium-centered self-energy correction in (re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope) at T=0.251 and 0.293 GeV, and a reduced hot-sector correction in (re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width) at T=0.352 GeV, together with tighter hot real-sector priors, block-normalized hot Euclidean/public residuals, explicit hot spectral-shape/summary/centroid sanity anchors, and a low-energy soft mode that redistributes a controlled fraction of spectral weight into a broad collective component without reopening large real-part drift",
+            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, weak all-temperature public-lattice and public-c1 anchors, soft Tang Fig. 4 priors on (m_d,m_s,c_b), a four-parameter inferred-medium-centered self-energy correction in (re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope) at T=0.251 and 0.293 GeV, and a reduced hot-sector correction in (re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width, gluon_gap_strength, gluon_gap_gev) at T=0.352 GeV, together with tighter hot real-sector priors, block-normalized hot Euclidean/public residuals, explicit hot spectral-shape/summary/centroid sanity anchors, a low-energy soft mode that redistributes a controlled fraction of spectral weight into a broad collective component without reopening large real-part drift, and a surrogate infrared gluon-gap regulator that damps the hot low-energy imaginary kernel to emulate stabilization of the outer self-energy loop",
         },
         "fit_metrics": fit_metrics,
         "global_common_ms_fit": {
