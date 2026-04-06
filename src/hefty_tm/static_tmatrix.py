@@ -273,6 +273,14 @@ def _fit_polynomial_shape_coefficients(
     return np.asarray(real_coeffs, dtype=float), imag_log_peak, np.asarray(imag_coeffs, dtype=float)
 
 
+def fit_polynomial_shape_coefficients(
+    energies: np.ndarray,
+    real_part: np.ndarray,
+    imag_part: np.ndarray,
+) -> tuple[np.ndarray, float, np.ndarray]:
+    return _fit_polynomial_shape_coefficients(energies, real_part, imag_part)
+
+
 def load_public_outer_loop_anchors(
     root: Path,
     *,
@@ -375,35 +383,27 @@ def static_spectral_function(
     gluon_gap_gev: float = 0.0,
     distance_shape: float = 0.0,
 ) -> np.ndarray:
-    shape_coordinate = energy_shape_coordinate(kernel.energies)
-    shape_curvature = shape_coordinate**2 - (1.0 / 3.0)
-    distance_curvature = distance_shape * (distance_shape - 0.5)
-    distance_mid = distance_shape * (1.0 - distance_shape)
-    real_part = (
-        re_sigma_offset
-        + re_sigma_scale * kernel.real_part
-        + re_sigma_slope * shape_coordinate
-        + re_sigma_curvature * shape_curvature
-        + re_sigma_radius * distance_shape
-        + re_sigma_radius_curvature * distance_curvature
-        + re_sigma_radius_mid * distance_mid
+    real_part, imag_part = effective_self_energy_components(
+        potential=potential,
+        kernel=kernel,
+        re_sigma_offset=re_sigma_offset,
+        re_sigma_scale=re_sigma_scale,
+        re_sigma_slope=re_sigma_slope,
+        re_sigma_curvature=re_sigma_curvature,
+        re_sigma_radius=re_sigma_radius,
+        re_sigma_radius_curvature=re_sigma_radius_curvature,
+        re_sigma_radius_mid=re_sigma_radius_mid,
+        im_sigma_scale=im_sigma_scale,
+        im_sigma_slope=im_sigma_slope,
+        im_sigma_curvature=im_sigma_curvature,
+        im_sigma_radius=im_sigma_radius,
+        im_sigma_radius_curvature=im_sigma_radius_curvature,
+        im_sigma_radius_mid=im_sigma_radius_mid,
+        im_sigma_bias=im_sigma_bias,
+        gluon_gap_strength=gluon_gap_strength,
+        gluon_gap_gev=gluon_gap_gev,
+        distance_shape=distance_shape,
     )
-    imag_part = kernel.imag_part * im_sigma_scale * np.exp(
-        im_sigma_slope * shape_coordinate
-        + im_sigma_curvature * shape_curvature
-        + im_sigma_radius * distance_shape
-        + im_sigma_radius_curvature * distance_curvature
-        + im_sigma_radius_mid * distance_mid
-    ) - im_sigma_bias * distance_shape
-    gap_strength = max(float(gluon_gap_strength), 0.0)
-    gap_gev = max(float(gluon_gap_gev), 0.0)
-    if gap_strength > 0.0 and gap_gev > 0.0:
-        soft_distance = max(float(distance_shape), 0.0)
-        gap_center = float(potential - 0.6 * gap_gev * soft_distance * soft_distance)
-        gap_width = gap_gev * (0.90 + 0.35 * soft_distance)
-        gap_profile = np.exp(-0.5 * ((kernel.energies - gap_center) / gap_width) ** 2)
-        damping = np.clip(1.0 - gap_strength * gap_profile, 0.15, 1.0)
-        imag_part = imag_part * damping
     real_denominator = kernel.energies - potential - phi_value * real_part
     width = -phi_value * imag_part
     spectral_density = width / (np.pi * (real_denominator**2 + width**2))
@@ -434,6 +434,60 @@ def static_spectral_function(
             + transfer_fraction * spectral_weight * soft_profile
         )
     return spectral_density
+
+
+def effective_self_energy_components(
+    *,
+    potential: float,
+    kernel: SelfEnergyKernel,
+    re_sigma_offset: float = 0.0,
+    re_sigma_scale: float = 1.0,
+    re_sigma_slope: float = 0.0,
+    re_sigma_curvature: float = 0.0,
+    re_sigma_radius: float = 0.0,
+    re_sigma_radius_curvature: float = 0.0,
+    re_sigma_radius_mid: float = 0.0,
+    im_sigma_scale: float = 1.0,
+    im_sigma_slope: float = 0.0,
+    im_sigma_curvature: float = 0.0,
+    im_sigma_radius: float = 0.0,
+    im_sigma_radius_curvature: float = 0.0,
+    im_sigma_radius_mid: float = 0.0,
+    im_sigma_bias: float = 0.0,
+    gluon_gap_strength: float = 0.0,
+    gluon_gap_gev: float = 0.0,
+    distance_shape: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    shape_coordinate = energy_shape_coordinate(kernel.energies)
+    shape_curvature = shape_coordinate**2 - (1.0 / 3.0)
+    distance_curvature = distance_shape * (distance_shape - 0.5)
+    distance_mid = distance_shape * (1.0 - distance_shape)
+    real_part = (
+        re_sigma_offset
+        + re_sigma_scale * kernel.real_part
+        + re_sigma_slope * shape_coordinate
+        + re_sigma_curvature * shape_curvature
+        + re_sigma_radius * distance_shape
+        + re_sigma_radius_curvature * distance_curvature
+        + re_sigma_radius_mid * distance_mid
+    )
+    imag_part = kernel.imag_part * im_sigma_scale * np.exp(
+        im_sigma_slope * shape_coordinate
+        + im_sigma_curvature * shape_curvature
+        + im_sigma_radius * distance_shape
+        + im_sigma_radius_curvature * distance_curvature
+        + im_sigma_radius_mid * distance_mid
+    ) - im_sigma_bias * distance_shape
+    gap_strength = max(float(gluon_gap_strength), 0.0)
+    gap_gev = max(float(gluon_gap_gev), 0.0)
+    if gap_strength > 0.0 and gap_gev > 0.0:
+        soft_distance = max(float(distance_shape), 0.0)
+        gap_center = float(potential - 0.6 * gap_gev * soft_distance * soft_distance)
+        gap_width = gap_gev * (0.90 + 0.35 * soft_distance)
+        gap_profile = np.exp(-0.5 * ((kernel.energies - gap_center) / gap_width) ** 2)
+        damping = np.clip(1.0 - gap_strength * gap_profile, 0.15, 1.0)
+        imag_part = imag_part * damping
+    return np.asarray(real_part, dtype=float), np.asarray(imag_part, dtype=float)
 
 
 def model_cumulant_curve(

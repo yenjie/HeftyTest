@@ -18,6 +18,8 @@ from scipy.optimize import least_squares
 from scipy.special import erf, erfinv
 
 from .static_tmatrix import (
+    effective_self_energy_components,
+    fit_polynomial_shape_coefficients,
     PublicOuterLoopAnchor,
     SelfEnergyKernel,
     build_phi_interpolators,
@@ -65,6 +67,7 @@ TANG_EXACT_REFERENCE_KERNEL_DENSE_ENERGY_POINTS = 321
 TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV = 0.018
 TANG_WLC_FIG2_HOT_TANG_BLOCK_WEIGHT = 12.0
 TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT = 0.45
+TANG_WLC_FIG2_HOT_OUTER_LOOP_WEIGHT = 0.30
 TANG_WLC_FIG2_HOT_IM_SIGMA_SCALE_LOWER = 0.10
 TANG_WLC_FIG2_HOT_IM_SIGMA_SLOPE_BOUND = 5.0
 TANG_WLC_FIG2_HOT_IM_SIGMA_BIAS_BOUND = 1.5
@@ -105,6 +108,7 @@ TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_REFERENCE = 0.22
 TANG_WLC_FIG2_HOT_GLUON_GAP_GEV_PRIOR = 0.05
 TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT = 0.19
 TANG_WLC_FIG2_PUBLIC_C1_WEIGHT = 0.10
+TANG_WLC_FIG2_OUTER_LOOP_WEIGHT = 0.08
 TANG_WLC_FIG2_MD_PRIOR = 0.0525
 TANG_WLC_FIG2_MS_PRIOR = 0.0195
 TANG_WLC_FIG2_CB_PRIOR = 0.125
@@ -1407,6 +1411,80 @@ def _public_outer_loop_prior_residuals(
     ]
 
 
+def _effective_outer_loop_surrogate_residuals(
+    fit: PotentialFit,
+    base_fit: PotentialFit,
+    kernel: SelfEnergyKernel,
+    anchor: PublicOuterLoopAnchor,
+    *,
+    total_weight: float,
+    potential_gev: float = 0.0,
+) -> np.ndarray:
+    common_distance_shape = 0.0
+    base_real, base_imag = effective_self_energy_components(
+        potential=potential_gev,
+        kernel=kernel,
+        re_sigma_offset=base_fit.re_sigma_offset,
+        re_sigma_scale=base_fit.re_sigma_scale,
+        re_sigma_slope=base_fit.re_sigma_slope,
+        re_sigma_curvature=base_fit.re_sigma_curvature,
+        re_sigma_radius=base_fit.re_sigma_radius,
+        re_sigma_radius_curvature=base_fit.re_sigma_radius_curvature,
+        re_sigma_radius_mid=base_fit.re_sigma_radius_mid,
+        im_sigma_scale=base_fit.im_sigma_scale,
+        im_sigma_slope=base_fit.im_sigma_slope,
+        im_sigma_curvature=base_fit.im_sigma_curvature,
+        im_sigma_radius=base_fit.im_sigma_radius,
+        im_sigma_radius_curvature=base_fit.im_sigma_radius_curvature,
+        im_sigma_radius_mid=base_fit.im_sigma_radius_mid,
+        im_sigma_bias=base_fit.im_sigma_bias,
+        gluon_gap_strength=base_fit.gluon_gap_strength,
+        gluon_gap_gev=base_fit.gluon_gap_gev,
+        distance_shape=common_distance_shape,
+    )
+    fit_real, fit_imag = effective_self_energy_components(
+        potential=potential_gev,
+        kernel=kernel,
+        re_sigma_offset=fit.re_sigma_offset,
+        re_sigma_scale=fit.re_sigma_scale,
+        re_sigma_slope=fit.re_sigma_slope,
+        re_sigma_curvature=fit.re_sigma_curvature,
+        re_sigma_radius=fit.re_sigma_radius,
+        re_sigma_radius_curvature=fit.re_sigma_radius_curvature,
+        re_sigma_radius_mid=fit.re_sigma_radius_mid,
+        im_sigma_scale=fit.im_sigma_scale,
+        im_sigma_slope=fit.im_sigma_slope,
+        im_sigma_curvature=fit.im_sigma_curvature,
+        im_sigma_radius=fit.im_sigma_radius,
+        im_sigma_radius_curvature=fit.im_sigma_radius_curvature,
+        im_sigma_radius_mid=fit.im_sigma_radius_mid,
+        im_sigma_bias=fit.im_sigma_bias,
+        gluon_gap_strength=fit.gluon_gap_strength,
+        gluon_gap_gev=fit.gluon_gap_gev,
+        distance_shape=common_distance_shape,
+    )
+    base_re_coeffs, base_im_log_peak, base_im_coeffs = fit_polynomial_shape_coefficients(
+        kernel.energies,
+        base_real,
+        base_imag,
+    )
+    fit_re_coeffs, fit_im_log_peak, fit_im_coeffs = fit_polynomial_shape_coefficients(
+        kernel.energies,
+        fit_real,
+        fit_imag,
+    )
+    delta_re_mean = float(np.mean(fit_real - base_real))
+    residuals = [
+        (delta_re_mean - anchor.delta_re0) / anchor.sigma_re0,
+        (float(fit_re_coeffs[1] - base_re_coeffs[1]) - anchor.delta_re1) / anchor.sigma_re1,
+        (float(fit_re_coeffs[2] - base_re_coeffs[2]) - anchor.delta_re2) / anchor.sigma_re2,
+        (float(fit_im_log_peak - base_im_log_peak) - anchor.delta_im_log0) / anchor.sigma_im_log0,
+        (float(fit_im_coeffs[1] - base_im_coeffs[1]) - anchor.delta_im1) / anchor.sigma_im1,
+        (float(fit_im_coeffs[2] - base_im_coeffs[2]) - anchor.delta_im2) / anchor.sigma_im2,
+    ]
+    return _normalize_residual_block(residuals, total_weight)
+
+
 def fit_temperature_separately(
     intercepts: dict[float, dict[float, InterceptEstimate]]
 ) -> dict[float, PotentialFit]:
@@ -2429,6 +2507,7 @@ def fit_temperature_separately_tang_wlc_fig2(
     publication_parameter_targets: dict[float, tuple[float, float, float]],
     public_re_profiles: dict[float, PublicFiniteTemperaturePotentialProfile],
     spectral_targets: dict[float, dict[float, tuple[np.ndarray, np.ndarray]]],
+    outer_loop_anchors: dict[float, PublicOuterLoopAnchor] | None = None,
 ) -> dict[float, PotentialFit]:
     lower = np.array([0.15, 0.02, 0.2], dtype=float)
     upper = np.array([1.5, 0.7, 3.0], dtype=float)
@@ -2440,6 +2519,7 @@ def fit_temperature_separately_tang_wlc_fig2(
         start = initial_fits[temperature_gev]
         public_profile = public_re_profiles[temperature_gev]
         reference = TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE[temperature_gev]
+        outer_loop_anchor = None if outer_loop_anchors is None else outer_loop_anchors.get(temperature_gev)
         if temperature_gev == 0.352:
             hot_reference = TANG_INFERRED_MEDIUM_CORRECTIONS_BY_TEMPERATURE[temperature_gev]
             hot_lower = np.array(
@@ -2733,6 +2813,16 @@ def fit_temperature_separately_tang_wlc_fig2(
                                 / TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR,
                             ]
                         )
+                        if outer_loop_anchor is not None:
+                            out.extend(
+                                _effective_outer_loop_surrogate_residuals(
+                                    candidate,
+                                    initial_fits[temperature_gev],
+                                    kernels[temperature_gev],
+                                    outer_loop_anchor,
+                                    total_weight=TANG_WLC_FIG2_OUTER_LOOP_WEIGHT,
+                                ).tolist()
+                            )
                 else:
                     out.extend((model - target).tolist())
                     validation_model = _forward_model_curve(
@@ -2795,6 +2885,16 @@ def fit_temperature_separately_tang_wlc_fig2(
                         TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT,
                     ).tolist()
                 )
+                if outer_loop_anchor is not None:
+                    out.extend(
+                        _effective_outer_loop_surrogate_residuals(
+                            candidate,
+                            initial_fits[temperature_gev],
+                            kernels[temperature_gev],
+                            outer_loop_anchor,
+                            total_weight=TANG_WLC_FIG2_HOT_OUTER_LOOP_WEIGHT,
+                        ).tolist()
+                    )
                 out.extend(
                     [
                         (candidate.md - publication_parameter_targets[temperature_gev][0])
@@ -8092,6 +8192,7 @@ def write_tang_wlc_fig2_fit_report(
     fit_metrics: dict[str, float],
     fig2_metrics: dict[str, float],
     publication_parameter_targets: dict[float, tuple[float, float, float]],
+    outer_loop_anchors: dict[float, PublicOuterLoopAnchor] | None = None,
 ) -> None:
     total_curve_points = sum(_count_curve_points(curves, temperature_gev) for temperature_gev in TEMPERATURES_GEV)
     raw_radius_fm = PUBLIC_WILSON_VALIDATION_RADIUS_INDEX * BAZAVOV_A_FM
@@ -8116,9 +8217,9 @@ def write_tang_wlc_fig2_fit_report(
         "- Floated parameters: `m_d(T)`, `m_s(T)`, and `c_b(T)` independently at each benchmark temperature; `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` at `T=0.251` and `0.293 GeV`; and `(re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width, gluon_gap_strength, gluon_gap_gev)` at `T=0.352 GeV`.",
         f"- All-temperature weak anchors: the non-hot slices use a weak public-lattice cumulant anchor with weight `{TANG_WLC_FIG2_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak public `c1` anchor with weight `{TANG_WLC_FIG2_PUBLIC_C1_WEIGHT:.3f}`, and soft Tang Fig. 4 priors on `(m_d,m_s,c_b)` with characteristic scales `({TANG_WLC_FIG2_MD_PRIOR:.3f}, {TANG_WLC_FIG2_MS_PRIOR:.3f}, {TANG_WLC_FIG2_CB_PRIOR:.3f})`.",
         f"- Intermediate-temperature medium correction: at `T=0.251` and `0.293 GeV`, the fit allows only a four-parameter self-energy refinement `(re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope)` with priors centered on the previously inferred missing-medium solution and characteristic scales `({TANG_WLC_FIG2_MID_RE_SIGMA_OFFSET_PRIOR:.3f}, {TANG_WLC_FIG2_MID_RE_SIGMA_SLOPE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SCALE_PRIOR:.3f}, {TANG_WLC_FIG2_MID_IM_SIGMA_SLOPE_PRIOR:.3f})`.",
-        f"- Hot-sector tradeoff: the `T=0.352 GeV` fit keeps the dashed Fig. 2 curves on a characteristic scale of `{TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV:.3f} GeV`, but the hot Fig. 2 and public-lattice validation blocks are normalized by block size before weighting so the Euclidean points do not numerically overwhelm the spectral sanity terms. The hot branch then adds a weak public-lattice validation anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak hot `c1` anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT:.3f}`, and explicit hot spectral sanity terms with shape weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SHAPE_WEIGHT:.3f}`, summary weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SUMMARY_WEIGHT:.3f}`, centroid-to-potential weight `{TANG_WLC_FIG2_HOT_CENTROID_WEIGHT:.3f}`, and direct target-centroid weight `{TANG_WLC_FIG2_HOT_TARGET_CENTROID_WEIGHT:.3f}`. The enlarged hot Fig. 2 tolerance reflects the demonstrated non-invertibility of the published hot Fig. 2 and Fig. 6 panels at the few-MeV level when treated as standalone public inputs.",
+        f"- Hot-sector tradeoff: the `T=0.352 GeV` fit keeps the dashed Fig. 2 curves on a characteristic scale of `{TANG_WLC_FIG2_HOT_TANG_SIGMA_GEV:.3f} GeV`, but the hot Fig. 2, public-lattice, public `c1`, and public WLC->SCS outer-loop surrogate blocks are normalized by block size before weighting so the dense Euclidean points do not numerically overwhelm the spectral and medium-closure sanity terms. The hot branch then adds a weak public-lattice validation anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_LATTICE_WEIGHT:.3f}`, a weak hot `c1` anchor with total weight `{TANG_WLC_FIG2_HOT_PUBLIC_C1_WEIGHT:.3f}`, a weak public outer-loop surrogate anchor with total weight `{TANG_WLC_FIG2_HOT_OUTER_LOOP_WEIGHT:.3f}`, and explicit hot spectral sanity terms with shape weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SHAPE_WEIGHT:.3f}`, summary weight `{TANG_WLC_FIG2_HOT_SPECTRAL_SUMMARY_WEIGHT:.3f}`, centroid-to-potential weight `{TANG_WLC_FIG2_HOT_CENTROID_WEIGHT:.3f}`, and direct target-centroid weight `{TANG_WLC_FIG2_HOT_TARGET_CENTROID_WEIGHT:.3f}`. The enlarged hot Fig. 2 tolerance reflects the demonstrated non-invertibility of the published hot Fig. 2 and Fig. 6 panels at the few-MeV level when treated as standalone public inputs.",
         "- Physics motivation for the medium correction: the WLC paper, the thesis, and the Wilson-line potential analyses all point to the highest-temperature mismatch being primarily a broadening/off-shell problem in the imaginary sector, while the real part remains much less screened than older Debye-screened expectations. The retained intermediate/high-temperature parameters map directly onto that language: scalar/energy-dependent real and imaginary self-energy refinements at intermediate temperature, and at `T=0.352 GeV` a reduced hot correction with one small real offset, an imaginary broadening amplitude plus large-radius/curvature terms, a condensation-inspired soft mode that transfers a controlled fraction of spectral weight into a broad low-energy component without inventing extra spectral area, and a surrogate infrared gluon-gap regulator that damps the would-be low-energy divergence in the hot imaginary kernel so the fit can explore slightly stronger long-distance attraction without reopening the runaway high-energy peak pathology.",
-        "- Reference centering: at all temperatures the screened-Cornell parameters are softly tied to Tang Fig. 4 and the short-`tau` potential intercepts are weakly anchored to the public finite-temperature `c1(r,T)` profile; at `T=0.251` and `0.293 GeV` the medium correction is centered on the previously inferred missing-medium solution, and at `T=0.352 GeV` the hot self-energy correction is centered on the same reference while the added hot spectral-shape, peak/width, centroid-to-potential, direct target-centroid, low-energy soft-mode, and infrared-gap priors suppress unphysical high-energy/narrow-peak solutions.",
+        "- Reference centering: at all temperatures the screened-Cornell parameters are softly tied to Tang Fig. 4 and the short-`tau` potential intercepts are weakly anchored to the public finite-temperature `c1(r,T)` profile; at `T=0.251` and `0.293 GeV` the medium correction is centered on the previously inferred missing-medium solution and weakly anchored to the published WLC->SCS self-energy shift extracted from arXiv:2503.10089; at `T=0.352 GeV` the hot self-energy correction is centered on the same reference while the added hot spectral-shape, peak/width, centroid-to-potential, direct target-centroid, low-energy soft-mode, infrared-gap, and outer-loop-surrogate priors suppress unphysical high-energy/narrow-peak solutions.",
         "- Fixed sectors: `phi(r,T)` and the regularized Fig. 6 reference kernel outside the retained intermediate/high-temperature correction.",
         "",
         "## Summary",
@@ -8167,6 +8268,29 @@ def write_tang_wlc_fig2_fit_report(
     lines.extend(
         [
             "",
+            "## Public outer-loop anchors",
+            "",
+            "- The appendix branch does not refit the microscopic outer self-energy loop. Instead it uses a weak surrogate anchor derived from the published WLC->SCS self-energy shift in arXiv:2503.10089.",
+            "- The surrogate compares the appendix branch's effective common self-energy at `distance_shape = 0` against the Tang-exact reference kernel through a polynomial-shape summary `(delta_re_mean, delta_re1, delta_re2, delta_im_log0, delta_im1, delta_im2)`.",
+        ]
+    )
+    if outer_loop_anchors is not None:
+        for temperature_gev in TEMPERATURES_GEV:
+            anchor = outer_loop_anchors.get(temperature_gev)
+            if anchor is None:
+                continue
+            lines.append(
+                f"- T = {temperature_gev:.3f} GeV anchor: "
+                f"delta_re0 = {anchor.delta_re0:.6f} +/- {anchor.sigma_re0:.6f}, "
+                f"delta_re1 = {anchor.delta_re1:.6f} +/- {anchor.sigma_re1:.6f}, "
+                f"delta_re2 = {anchor.delta_re2:.6f} +/- {anchor.sigma_re2:.6f}, "
+                f"delta_im_log0 = {anchor.delta_im_log0:.6f} +/- {anchor.sigma_im_log0:.6f}, "
+                f"delta_im1 = {anchor.delta_im1:.6f} +/- {anchor.sigma_im1:.6f}, "
+                f"delta_im2 = {anchor.delta_im2:.6f} +/- {anchor.sigma_im2:.6f}"
+            )
+    lines.extend(
+        [
+            "",
             "## Data boundary",
             "",
             "- The exact finite-temperature raw Wilson-line correlators for `Nt = 36, 28, 24, 20` are still not public in this workspace.",
@@ -8208,7 +8332,8 @@ def write_tang_wlc_fig2_fit_report(
             "## Caveat",
             "",
             "- This branch is useful for checking how closely a Tang-centered screened-Cornell fit plus the smallest temperature-ordered medium correction can reproduce the published dashed Euclidean curves while keeping the interference and surrogate-kernel sectors fixed.",
-            "- The deviation from the strict fixed-kernel replay is a four-parameter intermediate-temperature self-energy refinement at `T=0.251` and `0.293 GeV` plus an eight-parameter hot-sector correction at `T=0.352 GeV`, all tied back to the previously inferred missing-medium solution.",
+            "- The deviation from the strict fixed-kernel replay is a four-parameter intermediate-temperature self-energy refinement at `T=0.251` and `0.293 GeV` plus a ten-parameter hot-sector correction at `T=0.352 GeV`, all tied back to the previously inferred missing-medium solution.",
+            "- The new public outer-loop surrogate anchor only constrains the effective common self-energy shape; it is not a replacement for the actual microscopic equation-of-state / heavy-light self-consistency loop.",
             "- It is not the same as fitting the public lattice benchmark, and it is still not the full Tang thermodynamic T-matrix calculation because the outer equation-of-state / heavy-light self-consistency loop is not re-solved here.",
         ]
     )
@@ -8422,6 +8547,7 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
     tang_fig5 = load_tang_fig5(root)
     raw_wilson_validation = load_public_zero_temperature_wilson_validation(root)
     public_re_profiles = load_public_finite_temperature_potential_profiles(root)
+    outer_loop_anchors = load_public_outer_loop_anchors(root)
 
     initial_fits = {
         temperature_gev: _tang_exact_reference_fit(
@@ -8443,6 +8569,7 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
         publication_parameter_targets,
         public_re_profiles,
         spectral_targets,
+        outer_loop_anchors,
     )
     fit_metrics = summarize_publication_fit_metrics(
         curves,
@@ -8522,6 +8649,7 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
         fit_metrics,
         fig2_metrics,
         publication_parameter_targets,
+        outer_loop_anchors,
     )
 
     payload = {
@@ -8552,7 +8680,8 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
                 "hot_gluon_gap_gev",
             ],
             "fit_target": "Tang 2310.18864 Fig2 dashed Euclidean curves",
-            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, weak all-temperature public-lattice and public-c1 anchors, soft Tang Fig. 4 priors on (m_d,m_s,c_b), a four-parameter inferred-medium-centered self-energy correction in (re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope) at T=0.251 and 0.293 GeV, and a reduced hot-sector correction in (re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width, gluon_gap_strength, gluon_gap_gev) at T=0.352 GeV, together with tighter hot real-sector priors, block-normalized hot Euclidean/public residuals, explicit hot spectral-shape/summary/centroid sanity anchors, a low-energy soft mode that redistributes a controlled fraction of spectral weight into a broad collective component without reopening large real-part drift, and a surrogate infrared gluon-gap regulator that damps the hot low-energy imaginary kernel to emulate stabilization of the outer self-energy loop",
+            "public_outer_loop_surrogate_source": "arXiv:2503.10089 WLC->SCS self-energy summaries",
+            "self_consistent_closure": "screened-Cornell fit to published Fig2 curves with fixed phi(r,T), fixed regularized reference kernel, weak all-temperature public-lattice and public-c1 anchors, weak public outer-loop surrogate anchors above T=0.195 GeV, soft Tang Fig. 4 priors on (m_d,m_s,c_b), a four-parameter inferred-medium-centered self-energy correction in (re_sigma_offset, re_sigma_slope, im_sigma_scale, im_sigma_slope) at T=0.251 and 0.293 GeV, and a reduced hot-sector correction in (re_sigma_offset, im_sigma_scale, im_sigma_slope, im_sigma_radius, im_sigma_curvature, spectral_soft_mode_amp, spectral_soft_mode_drop, spectral_soft_mode_width, gluon_gap_strength, gluon_gap_gev) at T=0.352 GeV, together with tighter hot real-sector priors, block-normalized hot Euclidean/public residuals, explicit hot spectral-shape/summary/centroid sanity anchors, a low-energy soft mode that redistributes a controlled fraction of spectral weight into a broad collective component without reopening large real-part drift, a surrogate infrared gluon-gap regulator that damps the hot low-energy imaginary kernel to emulate stabilization of the outer self-energy loop, and a weak effective common-self-energy anchor to the published WLC->SCS medium shift",
         },
         "fit_metrics": fit_metrics,
         "global_common_ms_fit": {
@@ -8583,6 +8712,10 @@ def run_task1_tang_wlc_fig2_fit_benchmark(
                 "sigma_gev": profile.sigma_gev.tolist(),
             }
             for temperature_gev, profile in public_re_profiles.items()
+        },
+        "public_outer_loop_surrogate_anchors": {
+            f"{temperature_gev:.3f}": asdict(anchor)
+            for temperature_gev, anchor in outer_loop_anchors.items()
         },
         "spectral_summary": {
             key: {
