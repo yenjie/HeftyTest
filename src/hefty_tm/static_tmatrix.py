@@ -365,6 +365,12 @@ def static_spectral_function(
     im_sigma_radius_curvature: float = 0.0,
     im_sigma_radius_mid: float = 0.0,
     im_sigma_bias: float = 0.0,
+    spectral_shoulder_amp: float = 0.0,
+    spectral_shoulder_offset: float = 0.0,
+    spectral_shoulder_width: float = 0.0,
+    spectral_soft_mode_amp: float = 0.0,
+    spectral_soft_mode_drop: float = 0.0,
+    spectral_soft_mode_width: float = 0.0,
     distance_shape: float = 0.0,
 ) -> np.ndarray:
     shape_coordinate = energy_shape_coordinate(kernel.energies)
@@ -389,7 +395,34 @@ def static_spectral_function(
     ) - im_sigma_bias * distance_shape
     real_denominator = kernel.energies - potential - phi_value * real_part
     width = -phi_value * imag_part
-    return width / (np.pi * (real_denominator**2 + width**2))
+    spectral_density = width / (np.pi * (real_denominator**2 + width**2))
+    shoulder_amp = max(float(spectral_shoulder_amp), 0.0)
+    shoulder_width = max(float(spectral_shoulder_width), 0.0)
+    if shoulder_amp > 0.0 and shoulder_width > 0.0:
+        shoulder_center = float(potential + spectral_shoulder_offset)
+        shoulder_profile = np.exp(-0.5 * ((kernel.energies - shoulder_center) / shoulder_width) ** 2)
+        shoulder_profile /= np.sqrt(2.0 * np.pi) * shoulder_width
+        transfer_fraction = np.clip(shoulder_amp * max(distance_shape, 0.0), 0.0, 0.85)
+        spectral_weight = float(np.trapezoid(spectral_density, kernel.energies))
+        spectral_density = (
+            (1.0 - transfer_fraction) * spectral_density
+            + transfer_fraction * spectral_weight * shoulder_profile
+        )
+    soft_mode_amp = max(float(spectral_soft_mode_amp), 0.0)
+    soft_mode_width = max(float(spectral_soft_mode_width), 0.0)
+    if soft_mode_amp > 0.0 and soft_mode_width > 0.0:
+        soft_distance = max(float(distance_shape), 0.0)
+        soft_center = float(potential - spectral_soft_mode_drop * soft_distance * soft_distance)
+        effective_width = soft_mode_width * (0.70 + 0.45 * soft_distance)
+        soft_profile = np.exp(-0.5 * ((kernel.energies - soft_center) / effective_width) ** 2)
+        soft_profile /= np.sqrt(2.0 * np.pi) * effective_width
+        transfer_fraction = np.clip(soft_mode_amp * (0.15 + 1.00 * soft_distance), 0.0, 0.75)
+        spectral_weight = float(np.trapezoid(spectral_density, kernel.energies))
+        spectral_density = (
+            (1.0 - transfer_fraction) * spectral_density
+            + transfer_fraction * spectral_weight * soft_profile
+        )
+    return spectral_density
 
 
 def model_cumulant_curve(
@@ -413,6 +446,12 @@ def model_cumulant_curve(
     im_sigma_radius_curvature: float = 0.0,
     im_sigma_radius_mid: float = 0.0,
     im_sigma_bias: float = 0.0,
+    spectral_shoulder_amp: float = 0.0,
+    spectral_shoulder_offset: float = 0.0,
+    spectral_shoulder_width: float = 0.0,
+    spectral_soft_mode_amp: float = 0.0,
+    spectral_soft_mode_drop: float = 0.0,
+    spectral_soft_mode_width: float = 0.0,
     distance_shape: float = 0.0,
     anchor_to_potential: bool = True,
 ) -> np.ndarray:
@@ -435,6 +474,12 @@ def model_cumulant_curve(
         im_sigma_radius_curvature=im_sigma_radius_curvature,
         im_sigma_radius_mid=im_sigma_radius_mid,
         im_sigma_bias=im_sigma_bias,
+        spectral_shoulder_amp=spectral_shoulder_amp,
+        spectral_shoulder_offset=spectral_shoulder_offset,
+        spectral_shoulder_width=spectral_shoulder_width,
+        spectral_soft_mode_amp=spectral_soft_mode_amp,
+        spectral_soft_mode_drop=spectral_soft_mode_drop,
+        spectral_soft_mode_width=spectral_soft_mode_width,
         distance_shape=distance_shape,
     )
     tau_phys = tau_t / float(temperature_gev)
